@@ -1,0 +1,130 @@
+# REPL_D3
+
+1.  Create diskgroup and initialize replication on both sites.
+2.  Mount ACFS file system on all nodes on primary site.
+3.  On non-master node make a big new file, and make sure that the file is transporting.
+4.  On master node, failure public or private nic by ‘/sbin/ifdown’;
+
+網路介面控制器（英语：network interface controller，NIC），又稱网络接口控制器，网络适配器（network adapter），网卡（network interface card），或區域網路接收器（LAN adapter），是一块被设计用来允许计算机在计算机网络上进行通讯的计算机硬件。由于其拥有MAC地址，因此属于OSI模型的第1层。它使得用户可以通过电缆或无线相互连接。每一个网卡都有一个被称为MAC地址的独一无二的48位序列号，它被写在卡上的一块ROM中。在网络上的每一个计算机都必须拥有一个独一无二的MAC地址。没有任何两块被生产出来的网卡拥有同样的地址。这是因为电气电子工程师协会（IEEE）负责为网络接口控制器销售商分配唯一的MAC地址。
+网卡以前是作为扩展卡插到计算机总线上的，但是由于其价格低廉而且以太网标准普遍存在，大部分新的计算机都在主板上集成了网络接口。这些主板或是在主板芯片中集成了以太网的功能，或是使用一块通过PCI (或者更新的PCI-Express总线)连接到主板上的廉价网卡。除非需要多接口或者使用其它种类的网络，否则不再需要一块独立的网卡。甚至更新的主板可能含有内置的双网络（以太网）接口。
+1. 
+[Tue Sep 12 04:15:35][19140][root@rwsae01.us.oracle.com:/sbin][0]# ifconfig -a
+eno1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.160.42  netmask 255.255.252.0  broadcast 10.208.163.255
+        inet6 fe80::221:28ff:fe3d:efcb  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:28:3d:ef:cb  txqueuelen 1000  (Ethernet)
+        RX packets 22870086  bytes 15526691741 (14.4 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 19817567  bytes 16972926919 (15.8 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eno1:1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 169.254.16.163  netmask 255.255.240.0  broadcast 169.254.31.255
+        ether 00:21:28:3d:ef:cb  txqueuelen 1000  (Ethernet)
+
+eno2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.152.46  netmask 255.255.252.0  broadcast 10.208.155.255
+        inet6 fe80::221:28ff:fe3d:efcc  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:28:3d:ef:cc  txqueuelen 1000  (Ethernet)
+        RX packets 20690902  bytes 15926526226 (14.8 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 20205547  bytes 17322577156 (16.1 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eno2:2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 169.254.8.232  netmask 255.255.240.0  broadcast 169.254.15.255
+        ether 00:21:28:3d:ef:cc  txqueuelen 1000  (Ethernet)
+
+eno3: flags=4098<BROADCAST,MULTICAST>  mtu 1500
+        ether 00:21:28:3d:ef:cd  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.144.42  netmask 255.255.248.0  broadcast 10.208.151.255
+        inet6 2606:b400:400:784a:221:28ff:fe3d:efca  prefixlen 64  scopeid 0x0<global>
+        inet6 fe80::221:28ff:fe3d:efca  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+        RX packets 21545857  bytes 18963028942 (17.6 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 35747923  bytes 47253000068 (44.0 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth0:1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.147.172  netmask 255.255.248.0  broadcast 10.208.151.255
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+
+eth0:2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.145.220  netmask 255.255.248.0  broadcast 10.208.151.255
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+
+eth0:4: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.147.130  netmask 255.255.248.0  broadcast 10.208.151.255
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+
+eth0:5: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.147.129  netmask 255.255.248.0  broadcast 10.208.151.255
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 0  (Local Loopback)
+        RX packets 7839163  bytes 7295737752 (6.7 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 7839163  bytes 7295737752 (6.7 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+2. 
+[Tue Sep 12 04:20:59][19140][root@rwsae01.us.oracle.com:~][0]# ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:21:28:3d:ef:ca brd ff:ff:ff:ff:ff:ff
+    inet 10.208.144.42/21 brd 10.208.151.255 scope global eth0
+    inet 10.208.147.172/21 brd 10.208.151.255 scope global secondary eth0:1
+    inet 10.208.145.220/21 brd 10.208.151.255 scope global secondary eth0:2
+    inet 10.208.147.130/21 brd 10.208.151.255 scope global secondary eth0:4
+    inet 10.208.147.129/21 brd 10.208.151.255 scope global secondary eth0:5
+    inet6 2606:b400:400:784a:221:28ff:fe3d:efca/64 scope global dynamic 
+       valid_lft 2591837sec preferred_lft 604637sec
+    inet6 fe80::221:28ff:fe3d:efca/64 scope link 
+       valid_lft forever preferred_lft forever
+3: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:21:28:3d:ef:cb brd ff:ff:ff:ff:ff:ff
+    inet 10.208.160.42/22 brd 10.208.163.255 scope global eno1
+    inet 169.254.16.163/20 brd 169.254.31.255 scope global eno1:1
+    inet6 fe80::221:28ff:fe3d:efcb/64 scope link 
+       valid_lft forever preferred_lft forever
+4: eno2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:21:28:3d:ef:cc brd ff:ff:ff:ff:ff:ff
+    inet 10.208.152.46/22 brd 10.208.155.255 scope global eno2
+    inet 169.254.8.232/20 brd 169.254.15.255 scope global eno2:2
+    inet6 fe80::221:28ff:fe3d:efcc/64 scope link 
+       valid_lft forever preferred_lft forever
+5: eno3: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN qlen 1000
+    link/ether 00:21:28:3d:ef:cd brd ff:ff:ff:ff:ff:ff
+    
+3. get just the Ip addresses use this small shell script:
+[Tue Sep 12 04:21:38][19140][root@rwsae01.us.oracle.com:~][0]# ip addr | awk '/inet / {sub(/\/.*/, "", $2); print $2}'
+127.0.0.1
+10.208.144.42
+10.208.147.172
+10.208.145.220
+10.208.147.130
+10.208.147.129
+10.208.160.42
+169.254.16.163
+10.208.152.46
+169.254.8.232
+
+
+
+
+Variant: 
+When only one node on primary site, failure public nic on primary, and then resume ; To check if data replication can be continue or not.
+When only one private nic on primary site, failure private nic on primary, and then resume ; To check if data replication can be continue or not.
