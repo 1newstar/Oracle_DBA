@@ -1,0 +1,250 @@
+# shell
+>> scratch/crsusr/yuyao/cdcasm-workload/cdcasm_workload/src
+** drwxr-xr-x 3 root root 4096 Sep 11 00:35 ACFS_function_unit
+drwxr-xr-x 4 root root 4096 Sep 11 00:35 ASM_function_unit
+drwxr-xr-x 2 root root 4096 Sep 11 00:35 bak
+drwxr-xr-x 2 root root 4096 Sep 11 00:34 CVS
+drwxr-xr-x 4 root root 4096 Sep 11 00:35 Destructive_function_unit
+!! drwxr-xr-x 2 root root 4096 Sep 11 00:35 logs
+** drwxr-xr-x 4 root root 4096 Sep 11 00:35 Sanity_Check
+** drwxr-xr-x 4 root root 4096 Sep 11 00:34 Workload
+1. ./* -h 可以查看 脚本 使用方法
+2. **是acfs相关的。/ACFS_function_unit 都是ACFS的。Sanity_Check 和Workload里面有ACFS和ASM。ACFS都是可以跑的。ASM的脚本你可以问yuyao哪些可以用
+3. 脚本有自己的log,在logs/下面
+4. 后面的case 是 destructive 和 long running
+5. 要./acfs_sec_create_rule.pl -d /mnt/p/ -p welcome1 -r 101
+运行这个脚本之前，需要setup root ssh passwordess on all node.
+用root user去执行所有脚本
+
+
+
+# REPL_B14
+1. Init replication on primary and standby
+[Sun Sep 10 20:00:46][26027][root@rwsae01.us.oracle.com:~][0]# crsctl stat res ora.data.p.acfs
+NAME=ora.data.p.acfs
+TYPE=ora.acfs.type
+TARGET=ONLINE           , ONLINE
+STATE=ONLINE on rwsae01, ONLINE on rwsae04
+
+[Sun Sep 10 20:01:32][26027][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# ./srvctl stop filesystem -volume s -diskgroup data -node rwsae01
+[Sun Sep 10 20:02:19][26027][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# ./srvctl stop filesystem -volume p -diskgroup data -node rwsae04
+
+[Sun Sep 10 20:03:26 ][root@rwsae04.us.oracle.com:~]#acfsutil repl init standby -u crsusr /mnt/s/
+
+[Sun Sep 10 20:06:56][26027][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][1]# acfsutil repl init primary -C -s crsusr@rwsae04 -d 6 -z on -m /mnt/s/ /mnt/p/
+
+> Usage: acfsutil [-h] repl init {primary | standby}       - which site
+                -u <user>                 - standby only, replication user
+                -s <standby_conn_string>  - primary only, standby connect
+                                            string
+                {-C|-M|-i <interval>}     - primary only, constant-mode,
+                                            manual-mode replication
+                                            or replication interval
+                [-m [<snapshot>@]<mountpoint>]
+                                          - primary only, standby mount point or
+                                            snapshot
+                [-d {0..6}]               - set trace level for debugging
+                [-z {on|off}]             - primary only, data transfer
+                                            compression
+                [<tagname> ...]           - primary only, tags to be replicated
+                [-o sshCmdPath=<ssh command path>]
+                                          - primary only, path to ssh command
+                [-o sshCipher=<cipher>]   - primary only, ssh cipher
+                [-o sshStrictKey={y|n}]   - primary only, require ssh host key
+                                            checking
+                [<snapshot>@]<mountpoint> - mount point or snapshot for
+                                            replication
+
+
+2. Try to Init Sec on primary .
+
+> Usage: acfsutil [-h] sec init -u <first_admin> -g <sec_admin_group>
+                                - Initialize security
+                                - [-u <first_admin>] First
+                                  security administrator
+                                - [-g <sec_admin_group>] Security 
+                                  administrator group
+
+[Sun Sep 10 20:11:10][26027][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][1]# acfsutil sec init -u crsusr -g oper
+Password for new ACFS Security administrator:
+Re-enter password for new ACFS Security administrator:
+acfsutil sec init: Security wallet created.
+
+
+3. Create a large number of realms/rules/rulesets (try 100+)  on primary
+> 执行 .pl 脚本方式
+./acfs_sec_create_rule.pl -d /mnt/p/ -p welcome1 -r 101
+运行这个脚本之前，需要setup root ssh passwordess on all node. （passwordless ssh.md）
+用root user去执行所有脚本
+*******************************************************************
+[Mon Sep 11 01:20:37][6777][root@rwsae01.us.oracle.com:/scratch/crsusr/yuyao/cdcasm-workload/cdcasm_workload/src/ACFS_function_unit][127]# ./acfs_sec_create_rule.pl -d /mnt/p/ -p welcome1 -r 101
+INFO: The cluster nodes are: "rwsae01, rwsae04"
+INFO: The local nodes is: "rwsae01"
+INFO: The remote nodes are: "rwsae04"
+INFO: CRS_HOME is installed at: "/scratch/oracle/CrsHome"
+INFO: CRS_BASE is installed at: "/scratch/oracle/crsbase"
+INFO: CRS_OWNER is: "crsusr"
+INFO: CRS_GROUP is: "oper"
+INFO: ORACLE_HOMES[0] is installed at: "/scratch/oracle/OraHome"
+INFO: ORACLE_BASES[0] is installed at: "/scratch/oracle/base"
+INFO: ORACLE_OWNERS[0] is: "racusr"
+INFO: ORACLE_GROUPS[0] is: "oper"
+INFO: The Cluster Name is: "rwsae-cluster"
+
+INFO: 
+############################ This is the "1" time to run this script ################################
+INFO: 
+############################ Create rule on  "/mnt/p" (Start)################################
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_13718_1 -m /mnt/p -t username root -o DENY" ...
+acfsutil sec rule create: ACFS-10662: Current user 'root' does not have security administrator privileges.
+acfsutil sec rule create: ACFS-10606: User 'root' is not a security administrator.
+>>>>>>>>>>>根据报错 一步步 排除
+
+[Mon Sep 11 01:28:16][31335][crsusr@rwsae01.us.oracle.com:~/yuyao/cdcasm-workload/cdcasm_workload/src/ACFS_function_unit][13]$ acfsutil sec admin add root
+acfsutil sec admin add: ACFS-10624: User 'root' is not member of the group 'oper'.
+acfsutil sec admin add: ACFS-10611: Failed to assign user 'root' as security administrator.
+
+[Mon Sep 11 01:29:36][6777][root@rwsae01.us.oracle.com:/scratch/crsusr/yuyao/cdcasm-workload/cdcasm_workload/src/ACFS_function_unit][1]# usermod -a -G oper root
+
+[Mon Sep 11 01:28:17][31335][crsusr@rwsae01.us.oracle.com:~/yuyao/cdcasm-workload/cdcasm_workload/src/ACFS_function_unit][1]$ acfsutil sec admin add root
+ACFS Security administrator password:
+Password for new ACFS Security administrator:
+Re-enter password for new ACFS Security administrator:
+
+*******************************************************************
+执行pl脚本报错
+/bin/mkdir: cannot create directory ‘/mnt/test/’: File exists
+INFO: 
+############################ This is the "1" time to run this script ################################
+INFO: 
+############################ Create rule on  "/mnt/p" (Start)################################
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_22230_1 -m /mnt/p -t username root -o ALLOW" ...
+acfsutil sec rule create: ACFS-10583: Internal API error : [Save DOM failed, 202].
+SUCCESS: Create new rule rule_22230_1 on /mnt/p successfully !
+
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_22230_2 -m /mnt/p -t time 00:00:00,23:59:59 -o ALLOW" ...
+acfsutil sec rule create: ACFS-10583: Internal API error : [Save DOM failed, 202].
+SUCCESS: Create new rule rule_22230_2 on /mnt/p successfully !
+
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_22230_3 -m /mnt/p -t application /mnt/test -o DENY" ...
+acfsutil sec rule create: ACFS-10583: Internal API error : [Save DOM failed, 202].
+SUCCESS: Create new rule rule_22230_3 on /mnt/p successfully !
+
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_22230_4 -m /mnt/p -t hostname rwsae01.us.oracle.com -o DENY" ...
+acfsutil sec rule create: ACFS-03118: cannot obtain the node number of host rwsae01.us.oracle.com via CSS or the Oracle Registry
+ERROR: Create new rule rule_22230_4 on /mnt/p failed !
+
+
+>>>>>>>>>>>>>>>>
+ huqian 修改hostname格式 为 不加 us.oracle.com.
+>>>>>>>>>>>>>>>>
+
+INFO: 
+############################ This is the "101" time to run this script ################################
+INFO: 
+############################ Create rule on  "/mnt/p" (Start)################################
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_30092_401 -m /mnt/p -t username root -o ALLOW" ...
+acfsutil sec rule create: ACFS-10583: Internal API error : [Save DOM failed, 202].
+SUCCESS: Create new rule rule_30092_401 on /mnt/p successfully !
+
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_30092_402 -m /mnt/p -t time 00:00:00,23:59:59 -o ALLOW" ...
+acfsutil sec rule create: ACFS-10583: Internal API error : [Save DOM failed, 202].
+SUCCESS: Create new rule rule_30092_402 on /mnt/p successfully !
+
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_30092_403 -m /mnt/p -t application /mnt/test -o DENY" ...
+acfsutil sec rule create: ACFS-10583: Internal API error : [Save DOM failed, 202].
+SUCCESS: Create new rule rule_30092_403 on /mnt/p successfully !
+
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_30092_404 -m /mnt/p -t hostname rwsae04 -o ALLOW" ...
+acfsutil sec rule create: ACFS-10583: Internal API error : [Save DOM failed, 202].
+SUCCESS: Create new rule rule_30092_404 on /mnt/p successfully !
+
+INFO: 
+############################ rule number is : "405" on  "/mnt/p" (End)################################
+INFO: 
+############################ Create rule on  "/mnt/p" (End)################################
+
+
+
+
+
+
+4. Add objects(large number of rules/ users/ groups) to a security realm.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+-rwxr-xr-x 1 root root  6556 Sep 11 00:35 acfs_sec_add_object_to_realm.pl
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>> 碰到问题了：
+INFO: ############################ This is the "1" time to run this script ################################
+INFO: ############################ Add object to realm on  "/mnt/p/" (Start)################################
+INFO: Got realm of ACFS /mnt/p successfully !
+
+INFO: Got ruleset of ACFS /mnt/p successfully !
+
+/bin/touch: cannot touch ‘/mnt/p/1’: Permission denied
+>>> 问题定位：<<----the fail reason.但是不知道为什么你当时报权限问题。我手动touch没问题,我re-run没有问题了。
+INFO: ############################ Add object to "realm_19048_101" on  "/mnt/p" ################################
+INFO: Add object to realm on  "/mnt/p" using command "/sbin/acfsutil sec realm add realm_19048_101 -m /mnt/p -u crsusr -G oper -l READ:ruleset_14956_30 -e -a AES -k 192 -f -r /mnt/p/1" ...
+acfsutil sec realm add: ACFS-10289: Group 'oper' already added to the realm 'realm_19048_101'.
+acfsutil sec realm add: ACFS-10794: File '/mnt/p/1' does not exist on mount point '/mnt/p'.
+acfsutil sec realm add: ACFS-10583: Internal API error : [Save DOM failed, 202].
+ERROR: ############################ Add object to "realm_19048_101" on  "/mnt/p" failed! ################################
+
+
+5. Modify and remove realms/rules/rulesets 
+>>acfsutil sec rule edit -h
+Usage: acfsutil [-h] sec rule edit <rule_name> -m <mount_point>
+                {[-t <rule_type> <rule_value>[,<rule_value>]]
+                [-o {ALLOW|DENY}]}
+                               - Edit a rule
+                               - <rule_name> rule name
+                               - [-m <mount_point>] mount point
+                               - [-t <rule_type>] rule type can be
+                                 username, time, hostname, or application
+                               - <rule_value> rule value
+                               - [-o {ALLOW|DENY}] rule option
+                                   ALLOW = allow operation if rule 
+                                           evaluates to TRUE
+                                   DENY  = deny operation if rule
+                                           evaluates to TRUE
+>>acfsutil sec rule destory -h
+                              <rule_name> -m <mount_point>
+       sec rule destroy                  - Destroy a rule
+       sec rule destroy                  - <rule_name> rule name
+       sec rule destroy                  - [-m <mount_point>] mount point
+
+[Mon Sep 11 19:20:53][32046][root@rwsae01.us.oracle.com:/scratch/crsusr/yuyao/cdcasm-workload/cdcasm_workload/src/ACFS_function_unit][130]# ./acfs_sec_destroy_realm.pl -d /mnt/p/ -p welcome1
+INFO: The cluster nodes are: "rwsae01, rwsae04"
+INFO: The local nodes is: "rwsae01"
+INFO: The remote nodes are: "rwsae04"
+INFO: CRS_HOME is installed at: "/scratch/oracle/CrsHome"
+INFO: CRS_BASE is installed at: "/scratch/oracle/crsbase"
+INFO: CRS_OWNER is: "crsusr"
+INFO: CRS_GROUP is: "oper"
+INFO: ORACLE_HOMES[0] is installed at: "/scratch/oracle/OraHome"
+INFO: ORACLE_BASES[0] is installed at: "/scratch/oracle/base"
+INFO: ORACLE_OWNERS[0] is: "racusr"
+INFO: ORACLE_GROUPS[0] is: "oper"
+INFO: The Cluster Name is: "rwsae-cluster"
+
+
+############################ Destroy realm on  "/mnt/p" (Start)################################
+Got realm of ACFS /mnt/p successfully !
+
+
+############################ Destroy realm on  "/mnt/p" ..... ################################
+
+############################ Destroy realm on  "/mnt/p" (End)################################
+
+
+Do above steps on primary while replication running.
+(1)rule Number limit is 500
+（猜想 另两种一样的结果）
+INFO: Create rules on  "/mnt/p" using command "/sbin/acfsutil sec rule create rule_14585_85 -m /mnt/p -t username root -o ALLOW" ...
+acfsutil sec rule create: ACFS-10770: Number of rules created on mount point '/mnt/p' has reached the limit 500.
+ERROR: Create new rule rule_14585_85 on /mnt/p failed ! 
+
+(2)ruleset Number limit is 500
+(3)realm Number limit is 500
+
+
