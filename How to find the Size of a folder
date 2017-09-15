@@ -1,0 +1,41 @@
+# How to find the Size of a folder/file
+df可以查看一级文件夹大小、使用比例、档案系统及其挂入点，但对文件却无能为力。
+du可以查看文件及文件夹的大小。
+两者配合使用，非常有效。比如用df查看哪个一级目录过大，然后用df查看文件夹或文件的大小，如此便可迅速确定症结。
+
+1. df命令可以显示目前所有文件系统的可用空间及使用情形
+[Fri Sep 15 00:59:45][3296][root@rwsae01.us.oracle.com:/scratch/oracle][0]# du -sh /scratch/oracle/CrsHome/
+7.3G    /scratch/oracle/CrsHome/
+
+[Fri Sep 15 01:00:41][3296][root@rwsae01.us.oracle.com:/scratch/oracle][0]# df -h
+Filesystem                                                   Size  Used Avail Use% Mounted on
+/dev/sda2                                                     50G   31G   16G  66% /
+devtmpfs                                                      36G   48K   36G   1% /dev
+tmpfs                                                         36G  1.6G   34G   5% /dev/shm
+tmpfs                                                         36G   51M   36G   1% /run
+tmpfs                                                         36G     0   36G   0% /sys/fs/cgroup
+/dev/sda1                                                    976M  688M  238M  75% /boot
+/dev/sda5                                                    4.8G  788M  3.8G  17% /oem
+/dev/mapper/DomUVol-scratch                                  215G   80G  125G  39% /scratch
+10.210.137.101:/export/local/x86_64/redhat/70_prod/packages  5.0T  3.7T  1.4T  73% /usr/local/remote/packages
+tmpfs                                                        7.1G   16K  7.1G   1% /run/user/65000
+10.210.137.102:/export/ade_infra/prod/LINUX.X64              500G  213G  288G  43% /usr/dev_infra/platform
+10.210.137.101:/export/ade_infra/prod/GENERIC                500G  213G  288G  43% /usr/dev_infra/generic
+/dev/asm/p-278                                                80G   44G   37G  55% /mnt/p
+/dev/asm/p1-387                                               11G  563M   10G   6% /scratch/crsusr/mount/pri
+
+指定深入目录的层数
+>> du -h --max-depth=2 /scratch/crsusr/mount/pri/
+
+[Fri Sep 15 01:13:52][3296][root@rwsae01.us.oracle.com:/scratch/oracle][0]# du -h --max-depth=3 /scratch/crsusr/mount/pri/
+64K     /scratch/crsusr/mount/pri/lost+found
+52K     /scratch/crsusr/mount/pri/test/test1/test2
+104K    /scratch/crsusr/mount/pri/test/test1
+156K    /scratch/crsusr/mount/pri/test
+64K     /scratch/crsusr/mount/pri/test1
+52K     /scratch/crsusr/mount/pri/test2
+52K     /scratch/crsusr/mount/pri/test3
+52K     /scratch/crsusr/mount/pri/test4
+52K     /scratch/crsusr/mount/pri/test5
+52K     /scratch/crsusr/mount/pri/test6
+576K    /scratch/crsusr/mount/pri/
