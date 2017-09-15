@@ -1,0 +1,54 @@
+# 手动建ACFS steps:
+(1). mkfs -t acfs /dev/asm/*
+(2). mount -t
+(3). srvctl add filesystem
+(4). srvctl start filsytem
+
+1. 
+[Thu Sep 07 01:57:29][12695][root@rwsae01.us.oracle.com:/sbin][1]# mkfs.acfs -v /dev/asm/volume4-54 -n volume4 -a /dev/asm/volume5-54 13G
+mkfs.acfs: version                   = 18.0.0.0.0
+mkfs.acfs: on-disk version           = 46.0
+mkfs.acfs: volume                    = /dev/asm/volume4-54
+mkfs.acfs: accelerator volume        = /dev/asm/volume5-54
+mkfs.acfs: volume size               = 13958643712  (  13.00 GB )
+mkfs.acfs: accelerator volume size   = 13958643712  (  13.00 GB )
+mkfs.acfs: accelerator volume space used         = 13958643712  (  13.00 GB )
+mkfs.acfs: bytes per sector          = 512
+mkfs.acfs: bytes per sector (accelerator volume) = 512
+mkfs.acfs: volume label              = volume4
+mkfs.acfs: file system ID            = 1647806547
+mkfs.acfs: file system size          = 13958643712  (  13.00 GB )
+mkfs.acfs: VolSignature              = ofsRMFS
+mkfs.acfs: VolMountPoint             = /dev/asm/volume4-54
+mkfs.acfs: VolMountPointLength       = 19
+mkfs.acfs: VolSerialNumber           = 0
+mkfs.acfs: VolLength                 = 13958643712  (  13.00 GB )
+mkfs.acfs: VolClusterSize            = 4096
+mkfs.acfs: VolFETAOffset             = 73728
+mkfs.acfs: VolExtentHeaderSize       = 4096
+mkfs.acfs: VolEAContainerUnitBlkSize = 4096
+mkfs.acfs: MetadataSize              = 4096
+mkfs.acfs: VolExclusiveMount         = 1
+mkfs.acfs: writing volume label
+mkfs.acfs: initializing FETA
+mkfs.acfs: initializing root dirnode
+mkfs.acfs: initializing .ACFS dirnode
+mkfs.acfs: initializing lost+found directory
+mkfs.acfs: initializing Snap Map
+mkfs.acfs: initializing Global Bitmap
+mkfs.acfs: writing volume header
+mkfs.acfs: Format complete.
+
+2. 
+[Thu Sep 07 02:03:39][12695][root@rwsae01.us.oracle.com:/sbin][0]# mount -t acfs -v /dev/asm/volume4-54 /mnt/p/
+mount.acfs: volume: /dev/asm/volume4-54, mount point: /mnt/p
+mount.acfs: options: rw
+mount.acfs: verbose option specified
+mount.acfs: command string: /bin/mount -i -t acfs -o ,rw /dev/asm/volume4-54 /mnt/p -v.
+mount: /dev/asm/volume4-54 mounted on /mnt/p.
+
+3. 
+[Thu Sep 07 02:05:33][12695][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# ./srvctl add filesystem -volume volume4 -diskgroup data -node rwsae01 -path /mnt/p/
+
+4. 
+[Thu Sep 07 02:07:51][12695][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][1]# ./srvctl start filesystem -volume volume4 -diskgroup data -node rwsae01
