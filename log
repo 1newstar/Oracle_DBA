@@ -1,0 +1,73 @@
+# GI安装 install product步骤： root.sh log
+> root.sh详细log： $GI_BASE/<hostname>/crsconfig
+Eg：/scratch/oracle/crsbase/crsdata/rwsae01/crsconfig
+tail -f rootcrs_rwsae01_2017-08-27_08-16-34PM.log
+
+另外：
+> GI安装日志:/tmp/GridSetupActions.../GridSetupActions...log
+> asmca log: $GI_BASE/cfgtoollogs/asmca
+> asm log: $GI_BASE/diag/asm/+asm/+ASM<N>/trace/alert*.log
+> apx log: $GI_BASE/diag/apx/+apx/+APX<N>/trace/alert*.log
+> dbca log: $ORA_BASE/cfgtoollogs/dbca
+
+# 
+DBCA Log Location:
+/scratch/oracle/base/cfgtoollogs/dbca/orcl/trace.log_2017-08-27_11-06-14PM
+
+Database Alert Log Location:
+/scratch/oracle/base/diag/rdbms/orcl/orcl_1/trace/alert_orcl_1.log
+
+# 看ASMCA log
+[Thu Aug 24 19:19:47][10961][root@rwsae01.us.oracle.com:/scratch/oracle/crsbase/cfgtoollogs/asmca][0]# tail -f asmca-170824PM071201.log
+
+[Thu Aug 24 19:11:43][3142][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][1]# su crsusr
+[rwsae01]:[19:11:53]:[/scratch/oracle/CrsHome/bin]:$ ./asmca
+> OUI asmca 时 点 ASM Instances, Disk Groups, Volumes 均无问题
+> 点 ACFS File Systems会 hang 住
+
+
+# DBCA创建DB的过程
+
+> DBCA创建DB的过程：起一个 db instance，stop 再 start 多次的过程
+
+GI 的log 大多在/scratch/oracle/crsbase/diag/下
+DB 的log 大多在/scratch/oracle/base/diag/下
+
+/scratch/oracle/base/diag/rdbms/orcl/orcl_1/trace/alert_orcl_1.log
+
+
+# 
+基本上所有的cluster的log都在此路径下：[root@rwsae01.us.oracle.com:/scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace][0]# vi acfsdupd_frank-353_0.trc
+
+[Wed Aug 23 00:27:43][32430][root@rwsae01.us.oracle.com:/scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace][0]# ps -ef|grep repl
+root     15485     1  0 Aug22 ?        00:01:42 /scratch/oracle/CrsHome/bin/acfsrepl_dupd.bin /scratch/crsusr/mount/clusterwidemount
+
+(睡了一觉 忘了,maybe这样查看日志)
+
+[Wed Aug 23 00:32:09][19745][crsusr@rwsae01.us.oracle.com:/scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace][0]$ cat acfsutil_9589.trc
+
+Trace file /scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace/acfsutil_9589.trc
+Oracle Database 12c Clusterware Release 12.2.0.2.0 - Production Copyright 1996, 2016 Oracle. All rights reserved.
+2017-08-22 03:23:41.291 :REPLINIT:1170375552: [9589] Start: /usr/sbin/acfsutil.bin repl init primary -C -s crsusr@10.208.145.223 /scratch/crsusr/mount/clusterwidemount/ 
+2017-08-22 03:23:41.291 :REPLINIT:1170375552: [9589]Unable to set logfile owner permissions for /scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace/acfsutil_9589.trc
+2017-08-22 03:23:41.291 :REPLINIT:1170375552: [9589]uscgCtxInit: Set tracing level: 3
+2017-08-22 03:23:41.291 :REPLINIT:1170375552: [9589]ofsrInitPrimaryV2: Continuous mode
+2017-08-22 03:23:41.306 :REPLINIT:1170375552: [9589]ofsrInitPrimaryV2: OFSR_IPV2_REPV2_FLAG_SET. state=0x1
+2017-08-22 03:23:41.306 :REPLINIT:1170375552: [9589]uscgGetReplicationState: repl state = 3
+2017-08-22 03:23:41.306 :REPLINIT:1170375552: [9589]usrgeVerifyStandbyV2: Entered. stbyhost=10.208.145.223, stbyuser=crsusr, USC_RACSTBYMP=/scratch/crsusr/mount/clusterwidemount, USC_RACSTBYSNAP=, flags=0x8
+2017-08-22 03:23:41.306 :REPLINIT:1170375552: [9589]usrgeVerifyStandbyV2: acfsutil path set to /sbin/acfsutil
+2017-08-22 03:23:41.306 :REPLINIT:1170375552: [9589]uscgInvokeCommand: invoking '/bin/ping -c 1 -w 3 10.208.145.223 > /dev/null 2>&1'
+2017-08-22 03:23:41.318 :REPLINIT:1170375552: [9589]usrgeVerifyStandbyV2: ping standby OK (/bin/ping -c 1 -w 3 10.208.145.223 > /dev/null 2>&1)
+2017-08-22 03:23:41.318 :REPLINIT:1170375552: [9589]uscgInvokeCommand: invoking '/usr/bin/ssh -o Ciphers=aes128-ctr -o BatchMode=true    -x crsusr@10.208.145.223 "/bin/sh -c 'true'" >> /usr/tmp/oracle_ssh.out 2>&1'
+2017-08-22 03:23:41.667 :REPLINIT:1170375552: [9589]usrgeVerifyStandbyV2: ssh to standby OK (/usr/bin/ssh -o Ciphers=aes128-ctr -o BatchMode=true    -x crsusr@10.208.145.223 "/bin/sh -c 'true'" >> /usr/tmp/oracle_ssh.out 2>&1)
+2017-08-22 03:23:41.667 :REPLINIT:1170375552: [9589]uscgInvokeCommand: invoking '/usr/bin/ssh -o Ciphers=aes128-ctr -o BatchMode=true    -x crsusr@10.208.145.223 "/bin/sh -c '/sbin/acfsutil repl info -c /scratch/crsusr/mount/clusterwidemount >/dev/null'"'
+2017-08-22 03:23:42.055 :REPLINIT:1170375552: [9589]ERROR: usrgeVerifyStandbyV2: repl is not initialized (/usr/bin/ssh -o Ciphers=aes128-ctr -o BatchMode=true    -x crsusr@10.208.145.223 "/bin/sh -c '/sbin/acfsutil repl info -c /scratch/crsusr/mount/clusterwidemount >/dev/null'"), ret=1
+2017-08-22 03:23:42.056 :REPLINIT:1170375552: acfsutil repl init: ACFS-05918: Replication initialization on primary site cannot confirm replication initialized on standby mount point '/scratch/crsusr/mount/clusterwidemount'.
+2017-08-22 03:23:42.056 :REPLINIT:1170375552: [9589]ofsrInitPrimaryV2: init failed. state=0x1
+2017-08-22 03:23:42.056 :REPLINIT:1170375552: [9589]ofsrInitPrimaryV2: init failed. Unset REPV2_RUNNING
+2017-08-22 03:23:42.136 :REPLINIT:1170375552: [9589] Returned: 1
+
+# dbca log
+```
+$ORACLE_BASE/cfgtoollogs/dbca/$ORACLE_INSTANCE	
+Eg: scratch/oracle/base/cfgtoollogs/dbca/orcl
