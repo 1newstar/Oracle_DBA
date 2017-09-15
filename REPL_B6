@@ -1,0 +1,64 @@
+# Bug 状态 须知
+bug状态回复后依然为13时，不需要改动。
+状态为30，31时需要做 打patch 上传log相关文件等操作，并改动Status.
+
+# REPL_B6
+1. Initialize replication on both sites
+
+2. Update replv2 some parameters on primary site.
+> run acfsutil repl update {-s user@netname ] [-d level] [{-C | -i period}] [-z { on | off }] mountp
+3.  Check updated info by "repl info -c"  on  primary site
+
+[Wed Aug 23 20:05:38][31597][root@rwsae01.us.oracle.com:~][0]# acfsutil repl update -s crsusr@rwsae03 -d 3 -i 1m /scratch/crsusr/mount/clusterwidemount/
+[Wed Aug 23 20:11:49][31597][root@rwsae01.us.oracle.com:~][1]# acfsutil repl info -c /scratch/crsusr/mount/clusterwidemount/
+Site:                                Primary
+Primary hostname:                    rwsae01.us.oracle.com
+Primary path:                        /scratch/crsusr/mount/clusterwidemount
+Primary status:                      Running
+Background Resources:                Active
+
+Standby connect string:              crsusr@rwsae03
+Standby path:                        /scratch/crsusr/mount/mounttest
+Replication interval:                0 days, 0 hours, 1 minutes, 0 seconds
+Sending primary as of:               Wed Aug 23 20:11:38 2017
+Status:                              Send Completed
+Retries made:                        0
+Last send started at:                Wed Aug 23 20:11:38 2017
+Last send completed at:              Wed Aug 23 20:11:39 2017
+Elapsed time for last send:          0 days, 0 hours, 0 minutes, 1 seconds
+Next send starts at:                 Wed Aug 23 20:12:38 2017
+Replicated tags:                     
+Data transfer compression:           Off
+ssh strict host key checking:        On
+Debug log level:                     3
+
+
+4. Update replv2 standby paramters.
+Run acfsutil repl update [-u user ] [-d ] mounts on standby site
+5. Check updated info by "repl info -c"  on standby
+> As in original replication, the commands must be run as ‘root’.
+
+[Wed Aug 23 20:34:01][25932][root@rwsae03.us.oracle.com:~][1]# acfsutil repl update -u racusr -d 3 /scratch/crsusr/mount/mounttest/
+[Wed Aug 23 20:35:20][25932][root@rwsae03.us.oracle.com:~][0]# acfsutil repl info -c /scratch/crsusr/mount/mounttest/
+Site:                                Standby
+Primary hostname:                    rwsae01.us.oracle.com
+Primary path:                        /scratch/crsusr/mount/clusterwidemount
+
+Standby connect string:              racusr@rwsae03
+Standby path:                        /scratch/crsusr/mount/mounttest
+Replication interval:                0 days, 0 hours, 1 minutes, 0 seconds
+Last sync time with primary:         Wed Aug 23 20:11:38 2017
+Receiving primary as of:             Wed Aug 23 20:11:38 2017
+Status:                              Receive Completed
+Last receive started at:             Wed Aug 23 20:11:39 2017
+Last receive completed at:           Wed Aug 23 20:11:39 2017
+Elapsed time for last receive:       0 days, 0 hours, 0 minutes, 0 seconds
+Data transfer compression:           Off
+ssh strict host key checking:        On
+Debug log level:                     3
+
+
+6. To update replication information while replicate data is running
+7. Check updated info by "repl info -c"  on both primary and standby
+
+
