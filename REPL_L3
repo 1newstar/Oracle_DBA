@@ -1,0 +1,20 @@
+# REPL_L3
+
+1. Setup 20+ pair replications.
+2. When replication is processing, do bonnie and snapshot and sec/encr operation workload
+
+Variant :
+re-test SEC_ENCR with busy Replication.
+1. Make sure that standby has smaller size acfs file system than primary;
+2. Init sec/enc/aud on primary.
+3.Initialize replication;
+4.Make a big file on the primary with bonnie tool;
+5. Do sec/enc/aud operations on primary.
+
+Variant:
+re-test with big files:
+1. Create  millions  of  files or dirs on primary.
+2. Create 100G+ size file  on primary.
+3. Run I/O on acfs till standby or primary full.
+4. Long running acfs workload and snapshot workload during replication is progressing
+
