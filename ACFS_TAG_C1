@@ -1,0 +1,138 @@
+ ACFS_TAG_C1（Pass）
+
+1. make some dirs on primary
+[Thu Sep 14 22:52:03][3296][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# acfsutil repl info -c /scratch/crsusr/mount/pri/
+Site:                                Primary
+Primary hostname:                    rwsae01.us.oracle.com
+Primary path:                        /scratch/crsusr/mount/pri
+Primary status:                      Running
+Background Resources:                Active
+
+Standby connect string:              crsusr@rwsae04
+Standby path:                        /scratch/crsusr/mount/sta
+Replication interval:                0 days, 0 hours, 0 minutes, 0 seconds
+Sending primary as of:               Thu Sep 14 22:51:58 2017
+Status:                              Send Completed
+Retries made:                        0
+Last send started at:                Thu Sep 14 22:51:58 2017
+Last send completed at:              Thu Sep 14 22:51:58 2017
+Elapsed time for last send:          0 days, 0 hours, 0 minutes, 0 seconds
+Next send starts at:                 now
+Replicated tags:                     
+Data transfer compression:           Off
+ssh strict host key checking:        On
+Debug log level:                     3
+
+[Thu Sep 14 23:20:54][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# mkdir -p test/test1/test2
+[Thu Sep 14 23:23:59][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# mkdir -m 755 test1
+[Thu Sep 14 23:24:12][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# mkdir -m 755 test2
+[Thu Sep 14 23:24:15][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# mkdir -m 755 test3
+[Thu Sep 14 23:24:17][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# mkdir -m 755 test4
+[Thu Sep 14 23:24:19][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# mkdir -m 755 test5
+[Thu Sep 14 23:24:22][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# mkdir -m 755 test6
+[Thu Sep 14 23:24:24][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# ls -l
+total 428
+drwx------ 2 root root 65536 Sep 14 22:38 lost+found
+drwxr-xr-x 3 root root 20480 Sep 14 23:23 test
+drwxr-xr-x 2 root root 20480 Sep 14 23:24 test1
+drwxr-xr-x 2 root root 20480 Sep 14 23:24 test2
+drwxr-xr-x 2 root root 20480 Sep 14 23:24 test3
+drwxr-xr-x 2 root root 20480 Sep 14 23:24 test4
+drwxr-xr-x 2 root root 20480 Sep 14 23:24 test5
+drwxr-xr-x 2 root root 20480 Sep 14 23:24 test6
+
+2. set tag on some dirs on primary:
+acfsutil tag set tag1 path1;acfsutil tag set tag2 path2;acfsutil tag set tag3 path3;
+
+[Thu Sep 14 23:30:31][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# acfsutil tag set -r -v tag1 /scratch/crsusr/mount/pri/test
+Set tag on file: /scratch/crsusr/mount/pri/test
+Set tag on file: /scratch/crsusr/mount/pri/test/test1
+Set tag on file: /scratch/crsusr/mount/pri/test/test1/test2
+[Thu Sep 14 23:33:03][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# 
+[Thu Sep 14 23:33:06][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# acfsutil tag set -r -v tag2 /scratch/crsusr/mount/pri/test*
+Set tag on file: /scratch/crsusr/mount/pri/test
+Set tag on file: /scratch/crsusr/mount/pri/test/test1
+Set tag on file: /scratch/crsusr/mount/pri/test/test1/test2
+Set tag on file: /scratch/crsusr/mount/pri/test1
+Set tag on file: /scratch/crsusr/mount/pri/test2
+Set tag on file: /scratch/crsusr/mount/pri/test3
+Set tag on file: /scratch/crsusr/mount/pri/test4
+Set tag on file: /scratch/crsusr/mount/pri/test5
+Set tag on file: /scratch/crsusr/mount/pri/test6
+
+3. check if tagged directories/files are synced between primary/standby.
+[Thu Sep 14 23:34:54 ][root@rwsae04.us.oracle.com:/scratch/crsusr/mount/sta]#acfsutil tag info -r /scratch/crsusr/mount/sta/
+/scratch/crsusr/mount/sta//test
+    Tags: tag1, tag2
+/scratch/crsusr/mount/sta//test/test1
+    Tags: tag1, tag2
+/scratch/crsusr/mount/sta//test/test1/test2
+    Tags: tag1, tag2
+/scratch/crsusr/mount/sta//test1
+    Tags: tag2
+/scratch/crsusr/mount/sta//test2
+    Tags: tag2
+/scratch/crsusr/mount/sta//test3
+    Tags: tag2
+/scratch/crsusr/mount/sta//test4
+    Tags: tag2
+/scratch/crsusr/mount/sta//test5
+    Tags: tag2
+/scratch/crsusr/mount/sta//test6
+    Tags: tag2
+[Thu Sep 14 23:39:22][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# acfsutil tag info -r /scratch/crsusr/mount/pri/
+/scratch/crsusr/mount/pri//test
+    Tags: tag2
+/scratch/crsusr/mount/pri//test/test1
+    Tags: tag2
+/scratch/crsusr/mount/pri//test/test1/test2
+    Tags: tag2
+/scratch/crsusr/mount/pri//test1
+    Tags: tag2
+/scratch/crsusr/mount/pri//test2
+    Tags: tag2
+/scratch/crsusr/mount/pri//test3
+    Tags: tag2
+/scratch/crsusr/mount/pri//test4
+    Tags: tag2
+/scratch/crsusr/mount/pri//test5
+    Tags: tag2
+/scratch/crsusr/mount/pri//test6
+    Tags: tag2
+
+4. unset files tags
+[Thu Sep 14 23:38:59][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][1]# acfsutil tag unset -v -r tag1 /scratch/crsusr/mount/pri/
+Removing tag(s) on file: /scratch/crsusr/mount/pri/
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test/test1
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test/test1/test2
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test1
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test2
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test3
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test4
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test5
+Removing tag(s) on file: /scratch/crsusr/mount/pri//test6
+
+
+>>>注：unset tag 命令在 Standby侧运行时，报错
+>>> 从逻辑上来讲，Standby作为Primary的备份，在Standby侧做unset或set的操作是没有意义的
+
+[Thu Sep 14 23:53:57 ][root@rwsae04.us.oracle.com:/scratch/crsusr/mount/sta]#acfsutil tag set -r -v tag3 /scratch/crsusr/mount/sta/test
+Set tag on file: /scratch/crsusr/mount/sta/test
+acfsutil tag set: CLSU-00107: operating system function: fsetxattr; failed with error data: 13; at location: OSEA_0
+acfsutil tag set: CLSU-00101: operating system error message: Permission denied
+acfsutil tag set: ACFS-03300: unable to set tag name on file /scratch/crsusr/mount/sta/test
+Set tag on file: /scratch/crsusr/mount/sta/test/test1
+
+[Thu Sep 14 23:44:38 ][root@rwsae04.us.oracle.com:/scratch/crsusr/mount/sta]#acfsutil tag unset -r tag2 /scratch/crsusr/mount/sta/test
+acfsutil tag unset: CLSU-00107: operating system function: fremovexattr; failed with error data: 13; at location: OREA_0
+acfsutil tag unset: CLSU-00101: operating system error message: Permission denied
+acfsutil tag unset: ACFS-03301: unable to unset tag name on file /scratch/crsusr/mount/sta/test
+
+要求：
+1. ACFS replication initialized with no problem
+2. After TAG set, the tagged file should be synced to standby site.
+3. after unset tag,the files are removed from standby
+4. Empty dir always replicated to standby.
+5. Tagged directories/files are synced.
+
