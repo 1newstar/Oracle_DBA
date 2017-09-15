@@ -1,0 +1,347 @@
+##########################################################
+1. 每周二下班 Report to Tie
+2. 每周二更新 https://stbeehive.oracle.com/teamcollab/wiki/Real+Application+Clusters:ACFS+Testing+Progress（详细见weekly report）
+3. 每发一个bug要更新 CDC RAC Portal
+##########################################################
+
+
+
+
+#
+bit和byte同译为"比特"，都是数据量度单位，bit=“比特”或“位”。 
+byte=字节即1byte=8bits,两者换算是1：8的关系。 
+
+#
+tail -f /scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace/acfsdupd_p-278_0.trc
+做repl 随时关注这个log, 这个log是replication的log
+
+#
+还有就是Severity: 和Dev Pri: 这个，咱们发bug时候默认都写2，除非是hot/block 或者你认为对你的Test 影响很大的bug，咱们可以手动升级到1，降级的话一般让开发来改
+
+# vncserver
+1. vncserver启动黑屏可能是xstartup文件损坏导致.
+从其他节点 ~/.vnc/ 目录下scp xstartup文件到无法启动节点
+
+每次启动vnc尝试使用 vncserver指令，等待系统自动分配序号。
+
+# vi查找关键词方法
+eg: esc退到命令模式，/关键词
+
+# macbook Launchpad下载文件进度条如何去掉
+通过在命令行中输入以下命令：
+defaults write com.apple.dock ResetLaunchPad -bool true; killall Dock
+
+
+# root密码被修改，解决办法
+用crsusr登陆进去。
+/usr/local/packages/aime/install/run_as_root sh  
+切换到root
+passwd
+continue
+密码改回 welcome1
+
+#
+发bug时，
+1. 还有就是Severity: 和Dev Pri: 这个，咱们发bug时候默认都写2，除非是hot/block 或者你认为对你的Test 影响很大的bug，咱们可以手动升级到1，降级的话一般让开发来改
+2. doc的bug，不用给环境信息。你点line edit把这行去掉吧“login passwd of resae01-04:        cdcora1/welcome(root) ”
+   Enter corrected text you want to replace this line with :
+输入空格
+3. 一般LInux上面fail的case，Solaris对应的case也是fail。
+   LInux的fail case number 》= Solaris
+
+还有把这个case ，bug更新到RAC portal里面
+
+*LInux上面fail的case在Solaris也是fail的，Solaris 上面fail的不一定在LInux上面fail*
+
+# Flex Cluster
+中心节点：和之前的版本一样，它们通过专用网络相互连接，可以直接访问共享存储。这些节点可以直接访问 Oracle 集群注册表 (OCR) 和表决磁盘 (Voting Disks)，最多可以有64个中心节点(Hub Nodes) 。
+
+叶节点：这些节点彼此不互连，也不能像中心节点一样访问共享存储。每个叶节点与所连接的中心节点通信，并通过所连接的中心节点连接到集群，这些节点不能运行ASM/RDBMS，我们可以部署应用在这些叶节点上。应用可以通过叶节点访问数据库，而不必在叶节点上运行 ASM 实例。通过中心节点连接到数据库使得它对应用透明。
+
+
+#
+每周一升级一次label
+control + C 终止命令
+control + Z 后台运行命令
+
+# ls与ll区别（ls-lrt）
+ls 和ll都是查看文件的命令。
+单单只是ls的话，只是列出目录里的文件，ll是列出文件或者目录以后，还列出目录里文件的详细信息，详细信息为 文件的权限已经文件的所有者、所有组等等信息。
+你自己可以实验下，ls ll后的不同。
+ls-l命令（ls后面带 l参数）和ll命令等同的。
+-r 对目录反向排序。
+-t 以时间排序。
+-u 以文件上次被访问的时间排序。
+-x 按列输出，横向排序。
+
+# linux下批量修改文件及文件夹所有者及权限
+
+需要使用到两个命令，chmod以及chown
+例:对/opt/oracle/目录下的所有文件与子目录执行相同的权限变更：
+chmod -R 700 /opt/oracle/
+-R参数是递归 处理目录下的所有文件以及子文件夹
+700是变更后的权限表示（只有所有者有读和写以及执行的权限）
+/opt/oracle/ 是需要执行的目录
+例:对 /opt/oracle/  目录下的所有文件与子目录执行相同的所有者变更，使所有者修改为oinstall用户组的oracle用户
+chown -R oracle:oinstall /opt/oracle/
+-R 同上
+oracle:oinstall oinstall用
+
+
+# 文档学习
+
+ASM三层体系结构：Disk –> Diskgroup –> ADVM volume
+用户可以基于ADVM volume来创建ACFS文件系统
+
+asmca以及命令行方法创建ACFS
+会用到 mount,umount,acfsutil,mkfs.acfs,fsck 几个命令
+acfsutil不属于任何一个rpm软件包
+
+# ASM (Automatic Storage Management）
+ASM的最小存储单位是一个”allocation unit”(AU)，通常为1MB，在Exadata上推荐为4MB
+ASM的核心是存储文件
+文件被划分为多个文件片，称之为”extent”
+11g之前extent的大小总是为一个AU，11g之后一个extent可以是1 or 8 or 64个AU
+ASM使用file extent map维护文件extent的位置
+ASM在LUN DISK的头部header维护其元数据，而非数据字典
+同时RDBMS DB会在shared pool中缓存file extent map，当server process处理IO时使用
+因为ASM instance使用类似于普通RDBMS的原理的instance/crash recovery，所以ASM instance奔溃后总是能复原的。
+
+1. Oracle ASM is a volume manager and a file system for Oracle Database files
+2. supports single-instance Oracle Database and Oracle RAC
+3. Oracle's recommended storage management solution
+4. ASM eliminate  I/O performance tuning
+5. ASM reduce Database administrator dependence on system administrator
+
+## ASM instance is a combination of the process and memory components for ASM. ##
+
+Oracle ASM is a volume manager and a file system for Oracle Database files that supports single-instance Oracle Database and Oracle Real Application Clusters (Oracle RAC) configurations.
+
+Oracle ASM uses disk groups to store data files; an Oracle ASM disk group is a collection of disks that Oracle ASM manages as a unit. Within a disk group, Oracle ASM exposes a file system interface for Oracle Database files.
+
+
+
+# ACFS
+**ACFS file systems are created within ASM volume files**
+Uniform: cluster-wide file access and naming of all customer file system application data
+
+Shared: cluster-wide access to application and database executables, trace files, alert logs, 
+application reports and configuration files
+
+Support:  Non-Database customer file system application data as an alternative to use of native or third party file system solutions.
+
+
+
+
+# ACFS Replication 
+1. 仅支持一个初始文件系统——>一个备份文件系统的 对应
+2. run Linux,Solaris or AIX 的节点可利用ACFS Replication将备份文件系统在不同操作系统上应用；windows不可以跨平台
+3. Oracle Grid Infrastructure software 前后版本应一致。When upgrading the sites, update the standby site first.
+（sites的含义：A site can host both primary and standby file systems. ）
+4. Oracle ACFS里的database files不支持replication
+5. 不支持 Oracle Restart
+
+Oracle ACFS replication uses the <u>ssh utility</u> as the transport between the primary and standby clusters
+
+# ACFS Tagging
+1. assigns a common naming attribute to a group of files
+Oracle ACFS Replication can use this tag to select files with a unique tag name for replication to a different remote cluster site
+
+# Check status of daemon
+>守护进程（Daemon）是运行在后台的一种特殊进程。它独立于控制终端并且周期性地执行某种任务或等待处理某些发生的事件。守护进程是一种很有用的进程。 
+Linux的大多数服务器就是用守护进程实现的。比如，Internet服务器inetd，Web服务器httpd等。同时，守护进程完成许多系统任务。比如，作业规划进程crond，打印进程lpd等。
+```
+# service service-name status
+# service --status-all
+
+or
+# /etc/init.d/service-name status
+```
+
+延伸
+```
+sudo service ntp stop
+sudo service ntp start
+sudo service ntp restart
+sudo service ntp status
+```
+
+# 查看当前Linux系统内核方法
+```
+[Wed Aug 16 01:43:11][30906][root@rwsae01.us.oracle.com:~][0]# cat /proc/version 
+Linux version 3.8.13-118.18.4.el7uek.x86_64 (mockbuild@x86-ol7-builder-02.us.oracle.com) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-11) (GCC) ) #2 SMP Tue May 30 14:52:44 PDT 2017
+[Wed Aug 16 01:43:25][30906][root@rwsae01.us.oracle.com:~][0]# uname -a
+Linux rwsae01.us.oracle.com 3.8.13-118.18.4.el7uek.x86_64 #2 SMP Tue May 30 14:52:44 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
+```
+# How to check Linux performance
+top, vmstat, iostat, free, and sar to manage performance on your Linux server.
+top命令可以实时动态地查看系统的整体运行情况，是一个综合了多方信息监测系统性能和运行信息的实用工具。通过top命令所提供的互动式界面，用热键可以管理。
+
+vmstat命令的含义为显示虚拟内存状态（“Viryual Memor Statics”），但是它可以报告关于进程、内存、I/O等系统整体运行状态。
+
+iostat命令被用于监视系统输入输出设备和CPU的使用情况。它的特点是汇报磁盘活动统计情况，同时也会汇报出CPU使用情况。同vmstat一样，iostat也有一个弱点，就是它不能对某个进程进行深入分析，仅对系统的整体情况进行分析。 
+
+free命令可以显示当前系统未使用的和已使用的内存数目，还可以显示被内核使用的内存缓冲区。 
+
+sar命令是Linux下系统运行状态统计工具，它将指定的操作系统状态计数器显示到标准输出设备。sar工具将对系统当前的状态进行取样，然后通过计算数据和比例来表达系统的当前运行状态。它的特点是可以连续对系统取样，获得大量的取样数据。取样数据和分析的结果都可以存入文件，使用它时消耗的系统资源很小。
+
+
+
+# 概念
+Network Information Services, NIS
+
+# How to configure NFS
+# Configure ipctest and use it
+# Set up a FTP server and learn how to upload/download a file
+
+
+# 需要读的文档
+[CDC RAC Portal  ACFS](https://apex.oraclecorp.com/pls/apex/f?p=29710:1:116899081647088:::::)
+
+[replication](http://docs.oracle.com/database/122/OSTMG/understand-acfs-admin.htm#OSTMG34600 )
+至
+[Configuring ssh for Use With Oracle ACFS Replication](http://docs.oracle.com/database/122/OSTMG/configure-acfs-replication.htm)  
+注：不用管Windows
+
+```
+
+# Network operations: create a private nic, delete a private nic
+
+## verify the speed of my NIC?
+```
+[Tue Aug 15 22:44:33][2883][crsusr@rwsae01.us.oracle.com:~][1]$ su -
+Password: 
+Last login: Tue Aug 15 21:30:43 PDT 2017 on pts/0
+[Tue Aug 15 22:44:40][3505][root@rwsae01.us.oracle.com:~][0]# ethtool eno1 | grep Speed
+        Speed: 1000Mb/s
+[Tue Aug 15 22:45:04][3505][root@rwsae01.us.oracle.com:~][0]# 
+```
+
+
+# Check DNS configuration, clean up DNS cache
+
+```
+[rwsae01]:[22:52:38]:[/root]:$ cd /etc/
+[rwsae01]:[22:52:43]:[/etc]:$ cat resolv.conf
+# 
+# Optional values recommended by GIT 
+# 
+options timeout:1 
+options attempts:2 
+# 
+# Domain Information 
+# 
+search us.oracle.com oracle.com oraclecorp.com 
+nameserver 10.210.255.250
+nameserver 10.231.225.65
+nameserver 192.135.82.4
+[rwsae01]:[22:52:47]:[/etc]:$ 
+```
+
+
+# Familiar with storage configuration: DAS/NAS/SAN
+
+First it is best to define the difference between a block device and filesystem. This is easier grasped if you are familiar with UNIX because it makes an objective distinction between the two things. Still the same applies to Windows.
+
+A block device is a handle to the raw disk.
+Such as /dev/sda for a disk or /dev/sda1 for a partition on that disk.
+A filesystem is layered on top of the block device in order to store data. You can then mount this.
+Such as mount /dev/sda1 /mnt/somepath.
+With those terms in mind it's then easier to see the distinction between the following.
+
+DAS is a block device from a disk which is physically [directly] attached to the host machine.
+You must place a filesystem upon it before it can be used.
+Technologies to do this include IDE, SCSI, SATA, etc.
+SAN is a block device which is delivered over the network.
+Like DAS you must still place a filesystem upon it before it can used.
+Technologies to do this include FibreChannel, iSCSI, FoE, etc.
+NAS is a filesystem delivered over the network.
+It is ready to mount and use.
+Technologies to do this include NFS, CIFS, AFS, etc.
+
+目前的外挂存储解决方案主要分为三种：
+(1) 直连式存储 (DAS：Direct Attached Storage)
+(2) 网络存储设备 (NAS：Network Attached Storage)
+(3) 存储网络 (SAN：Storage Area Network)
+存储方案内部使用的硬盘，多为SATA/SAS，追求高性能也用SSD，经过串联/RAID之后，对主机提供访问接口。
+
+NAS和SAN既竞争又合作，很多高端NAS的后端存储就是SAN。NAS和SAN的整合也是存储设备的发展趋势。SAN提供的存储单位是LUN，属于block级别的。经过NAS创建成文件系统后，就变成文件级别的了。        通俗一点，在linux里lsblk，看到的就是SAN提供的块设备，windows上的共享文件夹，一般是NAS的NFS服务。
+
+![](file:/Users/frank.shi/Desktop/vM1bu.png)
+
+# Do format disk, check partition table
+[fdisk命令](http://man.linuxde.net/fdisk)
+
+fdisk命令用于观察硬盘实体使用情况，也可对硬盘分区。它采用传统的问答式界面
+
+```
+列出所有硬盘设备情况
+# fdisk -l | grep '^Disk'
+[Wed Aug 16 01:03:59][9899][root@rwsae01.us.oracle.com:~][0]# fdisk -l |grep '^Disk'
+Disk /dev/sda: 299.0 GB, 298997252096 bytes, 583979008 sectors
+Disk label type: dos
+Disk identifier: 0x00063e5c
+...
+指定进行操作的磁盘
+# fdisk /dev/sdb
+输入m列出可以执行的命令：
+输入p列出磁盘目前的分区情况： 
+输入d然后选择分区，删除现有分区： 
+输入print查看分区是否已经删除： 
+输入n建立新的磁盘分区，首先建立两个主磁盘分区： 
+```
+
+```
+Command (m for help): n 
+Command action 
+    e extended 
+    p primary partition (1-4) 
+p //建立主分区 
+Partition number (1-4): 1 //分区号 
+First cylinder (1-391, default 1): //分区起始位置 
+Using default value 1 
+last cylinder or +size or +sizeM or +sizeK (1-391, default 391): 100 //分区结束位置，单位为扇区 
+
+Command (m for help): n //再建立一个分区 
+Command action 
+    e extended 
+    p primary partition (1-4) 
+p 
+Partition number (1-4): 2 //分区号为2 
+First cylinder (101-391, default 101): 
+Using default value 101 
+Last cylinder or +size or +sizeM or +sizeK (101-391, default 391): +200M //分区结束位置，单位为M
+...
+最后对分区操作进行保存： w
+
+```
+
+# create soft-link for different disk
+https://www.cyberciti.biz/faq/creating-soft-link-or-symbolic-link/
+
+There are two types of links：
+1. symbolic links: Refer to a symbolic path indicating the abstract location of another file
+2. hard links : Refer to the specific location of physical data.
+
+Soft links are created with the ln command
+
+>$ ln -s {source-filename} {symbolic-filename}
+For example create a softlink for /webroot/home/httpd/test.com/index.php as /home/vivek/index.php, enter the following command:
+```
+$ ln -s /webroot/home/httpd/test.com/index.php /home/vivek/index.php
+$ ls -l
+```
+Sample outputs:
+```
+lrwxrwxrwx 1 vivek  vivek    16 2007-09-25 22:53 index.php -> /webroot/home/httpd/test.com/index.php
+```
+You can now edit the soft link named /home/vivek/index.php and /webroot/home/httpd/test.com/index.php will get updated:
+```
+$ vi /home/vivek/index.php
+```
+Your actual file /webroot/home/httpd/test.com/index.php remains on disk even if you deleted the soft link /home/vivek/index.php using the rm command:
+```
+$ rm /home/vivek/index.php ## <--- link gone ##
+## But original/actual file remains as it is ##
+$ ls -l /webroot/home/httpd/test.com/index.php
+```
