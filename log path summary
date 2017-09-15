@@ -1,0 +1,32 @@
+# log path summary
+
+GI Install log:
+/tmp/GridSetupActions.../GridSetupActions...log
+
+root.sh log:
+/scratch/oracle/<gibase>/crsdata/<hostname>/crsconfig
+
+ASM log:
+/scratch/oracle/<gibase>/diag/asm/+asm/+ASM*/trace/alert_+ASM*.log
+
+IOS log:
+/scratch/oracle/<gibase>/diag/ios/+ios/+IOS*/trace/alert_+IOS*.log
+
+APX log:
+/scratch/oracle/<gibase>/diag/apx/+apx/+APX*/trace/alert_+APX*.log
+
+dbca log:
+/scratch/oracle/<dbbase>/cfgtoollogs/dbca/orcl
+
+asmca log:
+/scratch/oracle/<gibase>/cfgtoollogs/asmca
+
+ACFS log：
+/scratch/oracle/<gibase>/crsdata/node/acfs
+
+replication log:
+/scratch/oracle/<gibase>/diag/crs/<hostname>/crs/trace/acfsdupd_p-278_0.trc
+
+CRS log:
+/scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace/alert.log
+
