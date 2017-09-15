@@ -1,0 +1,28 @@
+#
+Configure an Oracle Standalone Cluster
+Configure an Oracle Domain Services Cluster (需求空间比较大，400G+)G
+./gridSetup.sh -J-Doracle.install.crs.skipGIMRDiskGroupSizeCheck=true
+以上述命令启动则在  GIMR Data Disk Group 时，忽略磁盘空间不够的警告
+
+正常启动：
+./gridSetup.sh -debug -loglevel detailed -printtime
+
+> 0104节点text 最下面有写，但没注意到
+Due to the disk storage is not enough we need to add option 
+“ -J-Doracle.install.crs.skipGIMRDiskGroupSizeCheck=true “ 
+to skip GIMR storage check.
+
+# 
+[Tue Aug 29 19:42:29][13199][root@rwsae01.us.oracle.com:/dev][0]# cat /proc/version 
+Linux version 3.8.13-118.18.4.el7uek.x86_64 (mockbuild@x86-ol7-builder-02.us.oracle.com) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-11) (GCC) ) #2 SMP Tue May 30 14:52:44 PDT 2017
+
+
+# 
+Jabber：**700
+会议Num/密码：2746985 / 87654321
+
+# GI 安装节点系统时间不同步
+以其中一节点为基准
+> date
+另外节点
+> date -s **:**:**
