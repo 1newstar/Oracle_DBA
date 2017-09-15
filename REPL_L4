@@ -1,0 +1,28 @@
+# REPL_L4
+1. Put ORACLE_HOME on acfs fs1 as primary, install RAC software on fs1, and create  RAC DB
+理解：建好GI，就可以创建DiskGroup--->创建ACFS，GI安装在本地（创建步骤和之前无异）
+     要求把 DB software 安装到 ACFS中（安装路径选到fs1中），然后创建DB
+
+两种方式：1 把ORACLE_HOME直接cNp到ACFS里 2 重新安装解压到ACFS里
+
+> 查看目录空间大小
+[Fri Sep 15 00:59:45][3296][root@rwsae01.us.oracle.com:/scratch/oracle][0]# du -sh /scratch/oracle/CrsHome/
+7.3G    /scratch/oracle/CrsHome/
+[Fri Sep 15 01:00:32][3296][root@rwsae01.us.oracle.com:/scratch/oracle][0]# du -sh /scratch/crsusr/mount/pri/
+576K    /scratch/crsusr/mount/pri/
+
+调节ACFS FS 大小
+[Fri Sep 15 01:22:09][3296][root@rwsae01.us.oracle.com:/scratch/oracle][0]# acfsutil size +5G -d /dev/asm/p1-387 /scratch/crsusr/mount/pri/
+acfsutil size: new file system size: 16642998272 (15872MB)
+
+
+2. Initialize standby(fs2) and primary(fs1).
+
+3. Keep RAC DB long running, and run workload on it
+(1) Outlook，Important： Aroltp dbworkload steps. from yuyao. run workload 步骤
+(2) /scratch/crsusr/yuyao  dbworkload.tar
+
+4. Long running do sec/enc/aud operations on primary
+
+
+
