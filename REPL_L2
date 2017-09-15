@@ -1,0 +1,20 @@
+# REPL_L2
+
+1. Setup replication on both site.
+2. When replicate is progressing, do the following operation against on primary site, or standby site:
+Continuously 
+create/delete volumes;
+enable/disable volumes;
+resize volumes
+bonnie running
+
+Note: the replicated acfs fs was not resided on the above volumes.
+
+Variant:
+1. Setup replication on both site.
+2. When replicate is progressing, do the following operation against on primary fs, or standby fs:
+Continuously 
+Resize/fsck/snap
+Continuously 
+add/drop disk;
+online/offline disk;
