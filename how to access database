@@ -1,0 +1,43 @@
+[Mon Aug 28 19:50:55][6801][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount][0]# su - crsusr
+Last login: Mon Aug 28 19:39:10 PDT 2017
+[Mon Aug 28 19:51:08][22216][crsusr@rwsae01.us.oracle.com:~][0]$ export ORACLE_HOME=/scratch/oracle/CrsHome
+[Mon Aug 28 19:51:22][22216][crsusr@rwsae01.us.oracle.com:~][0]$ export ORACLE_SID=+ASM
+[Mon Aug 28 19:51:28][22216][crsusr@rwsae01.us.oracle.com:~][0]$ asmcmd
+ASMCMD> lsdg
+State    Type    Rebal  Sector  Logical_Sector  Block       AU  Total_MB  Free_MB  Req_mir_free_MB  Usable_file_MB  Offline_disks  Voting_files  Name
+MOUNTED  EXTERN  N         512             512   4096  4194304     39000     4784                0            4784              0             Y  DATA/
+MOUNTED  EXTERN  N         512             512   4096  4194304     39000     1244                0            1244              0             N  MGMT/
+ASMCMD> cd +DATA
+
+ASMCMD> ls
+ASM/
+orapwasm
+orcl/
+rwsae-cluster/
+
+ASMCMD> cd orcl
+ASMCMD> ls
+568FD4AE3E4C4FAEE0538DE0E40A20DB/
+57CB4DCD6EA56491E0532A90D00A7D4B/
+57CB66C04B966363E0532D90D00A4224/
+CONTROLFILE/
+DATAFILE/
+ONLINELOG/
+PARAMETERFILE/
+PASSWORD/
+TEMPFILE/
+
+ASMCMD> cd DATAFILE
+ASMCMD> ls
+SYSAUX.259.953162379
+SYSTEM.258.953162343
+UNDOTBS1.260.953162403
+UNDOTBS2.288.953162873
+UNDOTBS3.289.953162873
+USERS.261.953162405
+
+ASMCMD> cd SYSAUX.259.953162379
+ASMCMD-8006: entry '+DATA/orcl/DATAFILE/SYSAUX.259.953162379' does not refer to an existing directory
+
+ASMCMD> pwd
++DATA/orcl/DATAFILE
