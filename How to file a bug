@@ -1,0 +1,104 @@
+# How to file a bug
+bug type也要看是什么bug，如果 是code的bug就选 bug
+17:47 如果 是一个功能，没问题 ，想让这个功能 有所提高就是enhancement,
+17:47 如果 是文档 的就是document bug了
+
+# Bug 模板（需要替换成自己的）
+1. Test configuration:
+======================
+  Cluster class: Standalone Cluster
+  Hubs: rwsae01/rwsae03/rwsae04 # 3 nodes
+  OS: Linux 4.1.12-61.1.16.el7uek.x86_64 #2 SMP Fri Oct 21 14:23:20 PDT 2016 x86_64 GNU/Linux
+  HW: rwsae01 rwsae03 rwsae04 # 3 nodes
+  OUI of GI is invoked from: rwsae01 (as crsusr)
+  OUI of DB is invoked from: rwsae01 (as racusr)
+
+  Labels:
+          HAS_MAIN_LINUX.X64_170814 (12.2.0.2.0)
+          RDBMS_MAIN_LINUX.X64_170814
+          USM_MAIN_LINUX.X64_170811
+
+  Env:
+    OraInventory :  /scratch/oracle/oraInventory
+    GI_OWNER :      crsusr
+    GI_BASE :       /scratch/oracle/crsbase
+    GI_HOME :       /scratch/oracle/CrsHome
+
+    DB_OWNER :      racusr
+    DB_BASE :       /scratch/oracle/base (on Local FS)
+    DB_HOME :       /scratch/oracle/OraHome (on Local FS)
+    DB created :    orcl (Admin-managed RAC DB put on ACFS)
+
+    OCR :           +DATA_KL_ST
+    VD/VF :         +DATA_KL_ST
+    GIMR DG :       +DATA_KL_ST
+
+    Cluster Name :  rwsae0104-cluster
+    SCAN Name :     rwsae0104-r
+    GNS VIP :       rwsae0104-g
+
+
+2. What does the test do:
+=========================
+Not specified the file system mounted on only one node，then run command to initialize standby replication. Use the wrong way to see whether error would be given.
+(1) Firstly, not stop filesystem in the nodes:rwsae03,rwsae04
+[root@rwsae01.us.oracle.com]# crsctl stat res ora.data.wrank.acfs
+NAME=ora.data.wrank.acfs
+TYPE=ora.acfs.type
+TARGET=ONLINE           , ONLINE           , ONLINE
+STATE=ONLINE on rwsae01, ONLINE on rwsae03, ONLINE on rwsae04
+(2) Secondly,  initialize standby replication
+[root@rwsae01.us.oracle.comt]# acfsutil repl init standby -u crsusr /scratch/crsusr/mount/mounttest/
+(3) Lastly, check the mounting state of ACFS. 
+[root@rwsae01.us.oracle.com]# crsctl stat res -t
+ora.data.wrank.acfs
+--------------------------------------------------------------------------------
+Name           Target  State        Server                   State details       
+--------------------------------------------------------------------------------
+Local Resources                                                                                         
+--------------------------------------------------------------------------------
+ora.data.wrank.acfs
+               ONLINE  ONLINE       rwsae01                  mounted on /scratch/
+                                                             crsusr/mount/mountte
+                                                             st,STABLE
+               ONLINE  ONLINE       rwsae03                  mounted on /scratch/
+                                                             crsusr/mount/mountte
+                                                             st,STABLE
+               ONLINE  ONLINE       rwsae04                  mounted on /scratch/
+                                                             crsusr/mount/mountte
+                                                             st,STABLE
+
+3. Problems hit/Consequence of the bug:
+=======================================
+ Before running the command：acfsutil repl init standby， the file system of the standby cluster specified is mounted on three nodes not only one node.
+ after running the command：acfsutil repl init standby, no error results are given.
+
+
+4. Additional information: 
+========================= 
+F6 5326176.572/170821010432 acfsutil.bin[6137] ofs_repl_get_racoonv2: ofs_repl_init_racoon_fcb failed (-1073741807)
+F6 5326176.589/170821010432 acfsutil.bin[6137] ofs_uniioctl: Initing repl for V2
+F6 5326176.919/170821010432 acfsutil.bin[6137] ofs_clone_propagate_snap_flags: set flag 0x20 clear flag 0x0 snapId 0x0
+V 5326190.436/170821010446 UsmVolMonitor[2021] FULL dump  - node number 1 of 3 active
+
+
+
+
+# file a bug 时收集 log
+[Mon Aug 21 03:51:05][27450][root@rwsae01.us.oracle.com:/scratch/crsusr/mount][127]# cd /scratch/oracle/CrsHome/bin/
+[Mon Aug 21 03:51:10][27450][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# ./tfactl diagcollect -since 1d -all
+
+Logs are being collected to: /scratch/oracle/crsbase/tfa/repository/collection_Mon_Aug_21_03_51_24_PDT_2017_node_all
+/scratch/oracle/crsbase/tfa/repository/collection_Mon_Aug_21_03_51_24_PDT_2017_node_all/rwsae04.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+/scratch/oracle/crsbase/tfa/repository/collection_Mon_Aug_21_03_51_24_PDT_2017_node_all/rwsae03.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+/scratch/oracle/crsbase/tfa/repository/collection_Mon_Aug_21_03_51_24_PDT_2017_node_all/rwsae01.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+
+# 打包 log
+sftp frank.shi@oracle.com@bugsftp
+cd bugnum
+put
+
+# ACFS log
+你用tfactl collect ACFS 和crs logs
+19:13 ACFS log在GIBASE/crsdata/node/acfs下面
+19:14 恩你就发吧。我出去一下。回来给你检查一下格式。
