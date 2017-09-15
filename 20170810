@@ -1,0 +1,54 @@
+# 知识点
+1. 将目录/usr/meng及其下面的所有文件、子目录的文件主改成 liu： chown -R liu /usr/meng
+2. scp是Linux中功能最强大的文件传输命令，可以实现从本地到远程以及远程到本地的轻松文件传输操作。
+Eg: scp local_file remote_username@remote_ip:remote_folder
+3. 删除文件 rm -rf
+4. 查看当前系统内核 uname -a
+5. 检查当前的分区情况:free -m
+6. 解压缩文件:unzip file.zip -d destination_folder
+7. GI新label共享路径:
+    /net/adcnas469/export/farm_metadata/RDBMS_MAIN_LINUX.X64_T20519054/install/shiphome/goldimage
+8.调用的命令均在 /scratch/grid/bin 下
+
+# GI 安装相关
+1. 调用gridsetup.sh时加上下列option
+-debug -loglevel detailed -printtime
+
+ gridsetup.sh -debug -loglevel detailed -printtime
+2. 需运行下面两个脚本
+/scratch/testing/oraInventory/orainstRoot.sh 
+/scratch/testing/grid/root.sh
+3. 
+卸载命令
+    ./e.sh; clear_crs; sleep 10; echo -e "\a\a\a\a\a\a"; /sbin/reboot
+
+# 交换分区(SWAP)的大小分配
+>交换分区(swap space)是一定磁盘空间（分区或文件），用于将部分内存中的数据换下来，以腾出内存空间用于其他需求。在一个系统中，物理内存的容量是有限的，当物理内存快使用完时，操作系统会使用交换分区（如果有的话）。当系统内存使用紧张时，操作系统根据一定的算法规则，将一部分最近没使用的内存页面保存到交换分区，从而为需要内存的程序留出足够的内存空间；在SWAP中的内存页面被访问到时，系统会将其重新载入到物理内存中去运行.
+
+    http://smilejay.com/2012/06/swap_size/ 
+    交换分区(SWAP)的大小分配
+
+    http://www.techotopia.com/index.php/Adding_and_Managing_RHEL_6_Swap_Space
+    Adding and Managing RHEL 6 Swap Space
+
+
+
+# ASM 与 ACFS 概念
+ASM用于替代普通文件系统及操作系统提供的LVM。
+LVM的体系分三层：Pysical volume –> Volume Group –> Logical Volume
+ASM的体系分两层：Disk –> Diskgroup
+对于用户来说，使用LVM时，文件放在基于Logical Volume创建的文件系统中；而使用ASM时，文件放在Diskgroup提供的大的存储池中。
+
+Oracle 11gR2:ACFS
+Oracle Automatic Storage Management Cluster File System (Oracle ACFS) is a multi-platform, scalable file system, and storage management technology that extends Oracle Automatic Storage Management (Oracle ASM) functionality to support customer files maintained <u>outside of Oracle Database</u>.
+**这句话的最终提到’outside of Oracle database’,是说Oracle不建议将数据库文件放在ACFS中，对于数据库文件，ASM仍然是首选的存储方式。**
+
+ACFS依赖ASM实现了如下特性：
+1. Oracle ACFS dynamic file system resizing
+2. Maximized performance through direct access to Oracle ASM disk group storage
+3. Balanced distribution of Oracle ACFS across Oracle ASM disk group storage for increased I/O parallelism
+4. Data reliability through Oracle ASM mirroring protection mechanisms
+
+OK，那用什么来承载ACFS呢，整个把一个diskgroup创建成ACFS吗？于是Oracle引入了ADVM，提供卷管理与存储设备驱动，你可以在磁盘组中创建虚拟磁盘并映射到操作系统。
+
+到此，ASM也形成了三层体系：Disk –> Diskgroup –> ADVM volume。于是用户可以基于ADVM volume来创建ACFS文件系统。
