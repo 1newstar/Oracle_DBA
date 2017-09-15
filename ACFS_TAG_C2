@@ -1,0 +1,146 @@
+ACFS_TAG_C2 (Defferred)
+
+1. create some dirs on fs1
+[Fri Sep 15 00:00:03][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][1]# ls -al
+total 464
+drwxr-xr-x 11 root   root 32768 Sep 14 23:24 .
+drwxr-xr-x  6 crsusr oper  4096 Aug 31 20:58 ..
+drwx------  2 root   root 65536 Sep 14 22:38 lost+found
+drwxr-xr-x  3 root   root 20480 Sep 14 23:23 test
+drwxr-xr-x  2 root   root 20480 Sep 14 23:24 test1
+drwxr-xr-x  2 root   root 20480 Sep 14 23:24 test2
+drwxr-xr-x  2 root   root 20480 Sep 14 23:24 test3
+drwxr-xr-x  2 root   root 20480 Sep 14 23:24 test4
+drwxr-xr-x  2 root   root 20480 Sep 14 23:24 test5
+drwxr-xr-x  2 root   root 20480 Sep 14 23:24 test6
+
+2. set tag on fs1 by ‘acfsutil tag set tag_name path’;
+[Fri Sep 15 00:03:48][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# acfsutil tag info -r /scratch/crsusr/mount/pri/
+/scratch/crsusr/mount/pri//test
+    Tags: tag1, tag2
+/scratch/crsusr/mount/pri//test/test1
+    Tags: tag1, tag2
+/scratch/crsusr/mount/pri//test/test1/test2
+    Tags: tag1, tiger, tag2
+/scratch/crsusr/mount/pri//test1
+    Tags: tag2
+/scratch/crsusr/mount/pri//test2
+    Tags: tag2
+/scratch/crsusr/mount/pri//test3
+    Tags: tag2
+/scratch/crsusr/mount/pri//test4
+    Tags: tag2
+/scratch/crsusr/mount/pri//test5
+    Tags: tag2
+/scratch/crsusr/mount/pri//test6
+    Tags: tag2
+
+3. initiate replication with the tag;
+[Fri Sep 15 00:19:20][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri/test1][0]# acfsutil repl init -h
+     Usage: acfsutil [-h] repl init {primary | standby}       - which site
+                -u <user>                 - standby only, replication user
+                -s <standby_conn_string>  - primary only, standby connect
+                                            string
+                {-C|-M|-i <interval>}     - primary only, constant-mode,
+                                            manual-mode replication
+                                            or replication interval
+                [-m [<snapshot>@]<mountpoint>]
+                                          - primary only, standby mount point or
+                                            snapshot
+                [-d {0..6}]               - set trace level for debugging
+                [-z {on|off}]             - primary only, data transfer
+                                            compression
+                [<tagname> ...]           - primary only, tags to be replicated
+                [-o sshCmdPath=<ssh command path>]
+                                          - primary only, path to ssh command
+                [-o sshCipher=<cipher>]   - primary only, ssh cipher
+                [-o sshStrictKey={y|n}]   - primary only, require ssh host key
+                                            checking
+                [<snapshot>@]<mountpoint> - mount point or snapshot for
+                                            replication
+[Fri Sep 15 00:46:50][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# acfsutil repl info -c /scratch/crsusr/mount/pri/
+Site:                                Primary
+Primary hostname:                    rwsae01.us.oracle.com
+Primary path:                        /scratch/crsusr/mount/pri
+Primary status:                      Running
+Background Resources:                Active
+
+Standby connect string:              crsusr@rwsae04
+Standby path:                        /scratch/crsusr/mount/sta
+Replication interval:                0 days, 0 hours, 0 minutes, 0 seconds
+Sending primary as of:               Fri Sep 15 00:45:09 2017
+Status:                              Send Completed
+Retries made:                        0
+Last send started at:                Fri Sep 15 00:45:09 2017
+Last send completed at:              Fri Sep 15 00:45:10 2017
+Elapsed time for last send:          0 days, 0 hours, 0 minutes, 1 seconds
+Next send starts at:                 now
+Replicated tags:                     alise
+Data transfer compression:           Off
+ssh strict host key checking:        On
+Debug log level:                     3
+
+4. check if directories/files are synced between primary/standby.
+正常传输
+[Fri Sep 15 00:20:14 ][root@rwsae04.us.oracle.com:/scratch/crsusr/mount/sta/test1]#acfsutil tag info -r /scratch/crsusr/mount/sta/
+/scratch/crsusr/mount/sta//test
+    Tags: tag1, tag2
+/scratch/crsusr/mount/sta//test/test1
+    Tags: tag1, tag2
+/scratch/crsusr/mount/sta//test/test1/test2
+    Tags: tag1, tiger, tag2
+/scratch/crsusr/mount/sta//test1
+    Tags: tag2
+/scratch/crsusr/mount/sta//test1/set_my_env.sh
+    Tags: tag2, alise
+/scratch/crsusr/mount/sta//test2
+    Tags: tag2
+/scratch/crsusr/mount/sta//test3
+    Tags: tag2
+/scratch/crsusr/mount/sta//test4
+    Tags: tag2
+/scratch/crsusr/mount/sta//test5
+    Tags: tag2
+/scratch/crsusr/mount/sta//test6
+    Tags: tag2
+
+5. unset files tags
+[Fri Sep 15 00:47:10 ][root@rwsae04.us.oracle.com:/scratch/crsusr/mount/sta]#acfsutil tag info -r /scratch/crsusr/mount/sta/
+/scratch/crsusr/mount/sta//test
+    Tags: tag1, tag2
+/scratch/crsusr/mount/sta//test/test1
+    Tags: tag1, tag2
+/scratch/crsusr/mount/sta//test/test1/test2
+    Tags: tag1, tiger, tag2
+/scratch/crsusr/mount/sta//test1
+    Tags: tag2
+/scratch/crsusr/mount/sta//test1/set_my_env.sh
+    Tags: tag2, alise
+/scratch/crsusr/mount/sta//test2
+    Tags: tag2
+/scratch/crsusr/mount/sta//test3
+    Tags: tag2
+/scratch/crsusr/mount/sta//test4
+    Tags: tag2
+/scratch/crsusr/mount/sta//test5
+    Tags: tag2
+/scratch/crsusr/mount/sta//test6
+    Tags: tag2
+    
+[Fri Sep 15 00:52:46][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri][0]# acfsutil tag unset -r all /scratch/crsusr/mount/pri/
+[Fri Sep 15 00:53:52][3296][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/pri/test1][0]# ls -al
+total 96
+drwxr-xr-x  2 root root 20480 Sep 15 00:13 .
+drwxr-xr-x 11 root root 32768 Sep 14 23:24 ..
+-rwxr-xr-x  1 root root 10782 Sep 15 00:13 set_my_env.sh
+[Fri Sep 15 00:53:40 ][root@rwsae04.us.oracle.com:/scratch/crsusr/mount/sta/test1]#ls -al
+total 84
+drwxr-xr-x  2 root root 20480 Sep 15 00:53 .
+drwxr-xr-x 11 root root 32768 Sep 15 00:45 ..
+
+要求：
+1. TAG set should be succeed.
+2. After initiate of replication, tagged files should be synced to standby site.
+3. after unset tag,the files are removed from standby
+
+Bug#24501993 (11, null) LNX64-12.2-ACFS-REPLV2:APPLY DATA FAILED AT USCASECSETSECADMINPERMS 
