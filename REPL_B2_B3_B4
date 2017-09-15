@@ -1,0 +1,115 @@
+# Configure password-less SSH login
+Why password-less SSH login
+In password-less SSH login method, we’re going to exchange encrypted keys instead of entering theactual password while connecting to the remote systems using SSH. So, nobody can easily hack orguess your password, because we don’t use passwords anymore to access the remote systems. And,more importantly hidden key-loggers and brute-force attacks does not workout for the prying eyes if weuse Password-less SSH login attempts.
+
+The Steps on (ACFS File System Snapshot-Based Replication/How to Setup Guide.pdf)
+
+# 概念澄清
+Primary Site 与 Standby Site
+Primary Node 与 Standby Node
+Primary ACFS 与 Standby ACFS
+意思一样
+
+两个ACFS可以位于不同的Cluster上，
+一个Cluster上也可以有两个ACFS，
+但一个ACFS只能对应一个Cluster
+
+
+# REPL_B2_B3_B4
+
+## 初始化 replication(rwsae01为Primary，rwsae04为Standby)
+1. Configure ssh on primary site.The follwoing cmd run as root on primary should be passwordless.
+ssh repluser@standby_site(ssh crsusr@rwsae03)
+2. Setup standby site with different options.
+acfsutil repl init standby -u repluser [-d trace_level] smount 
+3. Setup primary site with different options. 
+acfsutil repl init primary { -C | -i period | -M} -s repluser@standby_site [tagname...] [-m smountp] [-d trace_level] [-z {on | off}] pmount
+
+查看ACFS启动状况
+[Mon Aug 21 01:04:32][21284][root@rwsae01.us.oracle.com:~][0]# crsctl stat res ora.data.wrank.acfs
+NAME=ora.data.wrank.acfs
+TYPE=ora.acfs.type
+TARGET=ONLINE           , ONLINE           , ONLINE
+STATE=ONLINE on rwsae01, ONLINE on rwsae03, ONLINE on rwsae04
+
+如果想用不同 option来 setup，需要怎么做？
+先做terminate.
+To perform graceful ACFS Terminate, it is recommended to terminate the primary file system first, followed with by a terminate command at the standby file system.
+*先后顺序很重要
+acfsutil repl terminate primary /scratch/crsusr/mount/clusterwidemount/
+acfsutil repl terminate standby /scratch/crsusr/mount/mounttest/
+
+cd到/scratch/oracle/CrsHome/bin下，
+wrank:
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume wrank -diskgroup data -node rwsae01
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume wrank -diskgroup data -node rwsae03
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume wrank -diskgroup data -node rwsae04
+frank:
+[root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume frank -diskgroup data -node rwsae01
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume frank -diskgroup data -node rwsae03
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume frank -diskgroup data -node rwsae04
+
+删除ACFS并重建 此时，会mount到rwsae01，rwsae03，rwsae04三个节点上
+停掉其中两个
+[root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume wrank -diskgroup data -node rwsae01
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl stop filesystem -volume wrank -diskgroup data -node rwsae03
+
+在rwsae04上，su -  
+[Mon Aug 21 01:12:57][21284][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# crsctl stat res ora.data.wrank.acfs
+NAME=ora.data.wrank.acfs
+TYPE=ora.acfs.type
+TARGET=ONLINE           , OFFLINE, OFFLINE
+STATE=ONLINE on rwsae01, OFFLINE, OFFLINE
+
+[Mon Aug 21 00:26:23][21284][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# acfsutil repl init standby -u crsusr /scratch/crsusr/mount/mounttest/
+
+
+[Mon Aug 21 00:30:44][21284][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# acfsutil repl info -c /scratch/crsusr/mount/mounttest/
+Site:                                Standby
+Standby path:                        /scratch/crsusr/mount/NewFolder
+Replication interval:                0 days, 0 hours, 0 minutes, 0 seconds
+Last sync time with primary:         N/A
+Receiving primary as of:             N/A
+Data transfer compression:           Off
+ssh strict host key checking:        On
+Debug log level:                     3
+
+start 另外两个节点 ACFS状态为online
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl start filesystem -volume wrank -diskgroup data -node rwsae01
+[Mon Aug 21 01:25:49 ][root@rwsae04.us.oracle.com:/scratch/oracle/CrsHome/bin]#./srvctl start filesystem -volume wrank -diskgroup data -node rwsae03
+
+rwsae01 su -
+[Wed Aug 23 04:20:00][13511][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# acfsutil repl init primary -C -s crsusr@rwsae04 -m /scratch/crsusr/mount/mounttest/ /scratch/crsusr/mount/clusterwidemount/
+[Wed Aug 23 04:26:38][13511][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# acfsutil repl info  -c /scratch/crsusr/mount/clusterwidemount/
+Site:                                Primary
+Primary hostname:                    rwsae01.us.oracle.com
+Primary path:                        /scratch/crsusr/mount/clusterwidemount
+Primary status:                      Running
+Background Resources:                Active
+
+Standby connect string:              crsusr@rwsae04
+Standby path:                        /scratch/crsusr/mount/mounttest
+Replication interval:                0 days, 0 hours, 0 minutes, 0 seconds
+Sending primary as of:               Wed Aug 23 04:26:32 2017
+Status:                              Send Completed
+Retries made:                        0
+Last send started at:                Wed Aug 23 04:26:33 2017
+Last send completed at:              Wed Aug 23 04:26:33 2017
+Elapsed time for last send:          0 days, 0 hours, 0 minutes, 0 seconds
+Next send starts at:                 now
+Replicated tags:
+Data transfer compression:           Off
+ssh strict host key checking:        On
+Debug log level:                     3
+
+
+Variant:
+standby_site这个可以是nodename可以是node IP,可以是node VIP address
+统一来说就是一个IP 地址，连到哪里 就表示哪里是standby;你在init standby时候你会发现它要求standby ACFS 只能mount在一个节点上面,这个节点理论上就是standby Node 了,但是如果你init standby 之后，手动把standbyACFS又start 在其他节点上面，并且其他节点的SSH是没问题的,那么其他节点也能访问这个standby ACFS
+
+发的第一个bug相关：
+如果standbyACFS mount在多个节点，初始化standby应该报错。
+The acfsutil repl init primary and standby commands initiate replication between a specified primary site and a specified standby site. The acfsutil repl init standby command must be run first. Before running the command, ensure that the file system specified is mounted on only one node of the standby cluster. When the command completes successfully, mount the specified file system on all nodes of the standby cluster. Next, run the acfsutil repl init primary command.
+
+
+
