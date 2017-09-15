@@ -1,0 +1,13 @@
+#
+https://confluence.oraclecorp.com/confluence/display/~justin.ren@oracle.com/Node+Inventory
+更新节点信息
+
+# 进入Database
+crsctl stat res -t
+srvctl status database -db <dbname>
+export ORACLE_SID=
+export ORACLE_HOME=
+export PATH=$ORACLE_HOME/bin:$PATH
+echo $ORACLE_HOME
+sqlplus "/as sysdba"
+select open_mode from v$database;
