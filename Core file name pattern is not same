@@ -1,0 +1,14 @@
+PRVF-06402: Core file name pattern is not same on all the nodes.
+Cause: The core file name pattern is not same on all the nodes.
+Action: Ensure that the mechanism for core file naming works consistently on all the nodes. Typically for Linux, the elements to look into are the contents of two files /proc/sys/kernel/core_pattern or /proc/sys/kernel/core_uses_pid. Refer OS vendor documentation for platforms AIX, HP-UX, and Solaris.
+
+> 注：/proc/sys/kernel/core_pattern 文件一直在被读，
+>     启用root权限 :w! 也不可以强制 写
+
+**使用echo**
+
+04与01,03不同：
+
+[Wed Aug 30 01:48:42 ][root@rwsae04.us.oracle.com:/proc/sys/kernel]#echo "core-%e-%p" >> core_pattern
+[Wed Aug 30 01:49:14 ][root@rwsae04.us.oracle.com:/proc/sys/kernel]#cat core_pattern
+core-%e-%p
