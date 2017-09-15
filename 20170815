@@ -1,0 +1,471 @@
+# DATA MGMT
+调用DBCA时 MGMT空间不足，因为MGMT里面有DB，大概在30G 往上
+
+# how to do zip and unzip command 
+
+**Linux**：
+Linux has both zip and unzip program. By default, these utilities are not installed. You can install zip/unzip tools from the shell prompt. Open the Terminal by clicking on Application > System Tools > Terminal. You must be a root user, Type the following two commands to install zip and unzip program on Debian or Ubuntu Linux:
+```
+# apt-get install zip
+# apt-get install unzip
+```
+apt-get命令是Debian Linux发行版中的APT软件包管理工具。所有基于Debian的发行都使用这个包管理系统。deb包可以把一个应用的文件包在一起，大体就如同Windows上的安装文件。
+来自: http://man.linuxde.net/apt-get
+or
+```
+$ sudo apt-get install zip unzip
+```
+
+将/home/Blinux/html/这个目录下所有文件和文件夹打包为当前目录下的html.zip： 
+zip -q -r html.zip /home/Blinux/html 
+上面的命令操作是将绝对地址的文件及文件夹进行压缩，以下给出压缩相对路径目录，比如目前在Bliux这个目录下，执行以下操作可以达到以上同样的效果： 
+zip -q -r html.zip html 
+比如现在我的html目录下，我操作的zip压缩命令是： 
+zip -q -r html.zip *
+注：
+-q：不显示指令执行过程； 
+-r：递归处理，将指定目录下的所有文件和子目录一并处理；
+
+
+
+If the unzip command isn't already installed on your system, then run:
+```
+sudo apt-get install unzip
+```
+After installing the unzip utility, if you want to extract to a particular destination folder, you can use:
+```
+unzip file.zip -d destination_folder
+Eg: unzip grid_home.zip -d /scratch/oracle/CrsHome
+```
+
+# 查看AFD 状态
+
+[rwsae01]:[00:19:35]:[~]:$ lsmod |grep oracle
+oracleacfs           5388250  1 
+oracleadvm            940230  7 
+oracleoks             701288  2 oracleacfs,oracleadvm
+oracleafd             205611  1 
+
+or
+
+[rwsae01]:[00:38:28]:[/scratch/oracle/CrsHome]:$ ./bin/afddriverstate loaded
+AFD-9205: AFD device driver loaded status: 'true'
+
+注：Oracle 命令多在 /scratch/oracle/CrsHome/bin 下
+
+
+# 查看 GI DBSoftware DBInstance 安装情况
+[Tue Aug 15 01:56:20][22046][crsusr@rwsae01.us.oracle.com:~][127]$ adrci show incidents -all
+ORACLE_HOME environment variable not set, exiting
+下面需要用 export 导入 ORACLE_HOME
+[Tue Aug 15 01:57:21][22046][crsusr@rwsae01.us.oracle.com:~][1]$ cd /scratch/oracle/CrsHome/
+[Tue Aug 15 01:57:53][22046][crsusr@rwsae01.us.oracle.com:/scratch/oracle/CrsHome][0]$ export ORACLE_HOME=/scratch/oracle/CrsHome
+[Tue Aug 15 01:58:29][22046][crsusr@rwsae01.us.oracle.com:/scratch/oracle/CrsHome][127]$ adrci
+```
+ADRCI: Release 12.2.0.2.0 - Development on Tue Aug 15 01:59:23 2017
+
+Copyright (c) 1982, 2017, Oracle and/or its affiliates.  All rights reserved.
+
+ADR base = "/scratch/oracle/crsbase"
+adrci> 
+adrci> help
+
+ HELP [topic]
+   Available Topics:
+        CREATE REPORT
+        ECHO
+        ESTIMATE
+        EXIT
+        HELP
+        HOST
+        IPS
+        PURGE
+        RUN
+        SELECT
+        SET BASE
+        SET BROWSER
+        SET CONTROL
+        SET ECHO
+        SET EDITOR
+        SET HOMES | HOME | HOMEPATH
+        SET TERMOUT
+        SHOW ALERT
+        SHOW BASE
+        SHOW CONTROL
+        SHOW HM_RUN
+        SHOW HOMES | HOME | HOMEPATH
+        SHOW INCDIR
+        SHOW INCIDENT
+        SHOW LOG
+        SHOW PROBLEM
+        SHOW REPORT
+        SHOW TRACEFILE
+        SPOOL
+
+ There are other commands intended to be used directly by Oracle, type
+ "HELP EXTENDED" to see the list
+
+adrci> show incident
+DIA-48458: "show incident" failed due to the following errors
+DIA-48251: Failed to open relation due to following error
+DIA-48122: error with opening the ADR block file [/scratch/oracle/crsbase/diag/afdboot/user_root/host_466391484_107/metadata/INCIDENT.ams] [0]
+DIA-48191: user missing read or write permission on specified file
+Linux-x86_64 Error: 13: Permission denied
+Additional information: 6
+Additional information: 438
+Additional information: 33184
+
+DIA-48458: "show incident" failed due to the following errors
+DIA-48251: Failed to open relation due to following error
+DIA-48122: error with opening the ADR block file [/scratch/oracle/crsbase/diag/asmtool/user_root/host_466391484_107/metadata/INCIDENT.ams] [0]
+DIA-48191: user missing read or write permission on specified file
+Linux-x86_64 Error: 13: Permission denied
+Additional information: 6
+Additional information: 438
+Additional information: 33184
+
+
+ADR Home = /scratch/oracle/crsbase/diag/asm/user_crsusr/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/asm/user_root/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/asm/+asm/+ASM1:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/afdboot/user_root/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/clients/user_crsusr/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/clients/user_root/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/clients/user_racusr/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/kfod/rwsae01/kfod:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/asmtool/user_crsusr/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/asmtool/user_root/host_466391484_107:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/rdbms/_mgmtdb/-MGMTDB:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/crs/rwsae01/crs:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/tnslsnr/rwsae01/asmnet1lsnr_asm:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/tnslsnr/rwsae01/asmnet2lsnr_asm:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/tnslsnr/rwsae01/listener_scan2:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/tnslsnr/rwsae01/listener_scan1:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/tnslsnr/rwsae01/listener:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/tnslsnr/rwsae01/mgmtlsnr:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/tnslsnr/rwsae01/listener_scan3:
+*************************************************************************
+0 rows fetched
+
+ADR Home = /scratch/oracle/crsbase/diag/apx/+apx/+APX1:
+*************************************************************************
+0 rows fetched
+
+adrci> exit
+```
+
+
+# 命令学习
+
+1. 所有的命令都可以用 control + C 终止
+2. 在某个目录下查找文件
+   find . -name "crs_mon"
+3. markdown加下划线 <u>/etc/init.d directory</u>
+
+
+
+# Familiar with Service commands, about how to start/stop/restart service
+
+The service command is used to run a System V init script. Usually all system V init scripts are stored in <u>/etc/init.d directory</u> and service command can be used to start, stop, and restart the daemons and other services under Linux. All scripts in /etc/init.d accepts and supports at least the start, stop, and restart commands.
+```
+[Tue Aug 15 02:42:54][13319][crsusr@rwsae01.us.oracle.com:~][0]$ cd /etc/init.d
+[Tue Aug 15 02:43:07][13319][crsusr@rwsae01.us.oracle.com:/etc/init.d][0]$ ls -l
+total 256
+-rwxr-xr-x  1 root root  8007 Aug 14 21:59 afd
+-rw-r--r--  1 root root 15131 Sep 12  2016 functions
+-rwxr-xr-x. 1 root root  1751 Jul  3 02:33 gcstartup
+-rwxr-xr-x  1 root root 12200 Aug 14 21:58 init.ohasd
+-rwxr-xr-x  1 root root 16196 Aug 14 21:57 init.tfa
+-rwxr-xr-x. 1 root root  2256 May  7  2014 iprdump
+-rwxr-xr-x. 1 root root  2247 May  7  2014 iprinit
+-rwxr-xr-x. 1 root root  2269 May  7  2014 iprupdate
+-rwxr-xr-x. 1 root root  2260 Feb  1  2015 lldpd
+-rwxr-xr-x. 1 root root   128 Jun 12 12:57 lockgcstartup
+-rwxr-xr-x  1 root root  2989 Sep 12  2016 netconsole
+-rwxr-xr-x  1 root root  6643 Sep 12  2016 network
+-rwxr-xr-x. 1 root root 40405 Jul 10  2014 o2cb
+-rwxr-xr-x. 1 root root  3469 Jul 10  2014 ocfs2
+-rwxr-xr-x  1 root root  7395 Aug 14 21:58 ohasd
+-r-x------  1 root root  4051 Dec  8  2016 oracle-fspmd
+-rwx------  1 root root  1299 Jan 18  2017 oracle-rdbms-server-12cR1-preinstall-firstboot
+-rwxr-xr-x. 1 root root  2253 May  5  2014 pcp
+-rwxr-xr-x. 1 root root  1072 Jun 12 12:57 pddomainname
+-rwxr-xr-x. 1 root root  3609 Jun  3  2016 pdit-mc-srv28
+-rwxr-xr-x. 1 root root 13545 May  5  2014 pmcd
+-rwxr-xr-x. 1 root root  6887 May  5  2014 pmie
+-rwxr-xr-x. 1 root root  7120 May  5  2014 pmlogger
+-rwxr-xr-x. 1 root root  6809 May  5  2014 pmmgr
+-rwxr-xr-x. 1 root root  7076 May  5  2014 pmproxy
+-rwxr-xr-x. 1 root root  6888 May  5  2014 pmwebd
+-rw-r--r--  1 root root  1160 May 26 17:30 README
+-rwxr-xr-x. 1 root root  2857 Jun 17  2013 rhnsd
+-rwxr-xr-x. 1 root root   910 Sep 30  2016 rsm_install.sh
+-rwxr-xr-x. 1 root root 23103 May  8  2014 systemtap
+-rwxr-xr-x. 1 root root    83 Jun 12 12:57 unlockgcstartup
+```
+The general syntax is as follows:
+```
+service SCRIPT-Name COMMAND
+```
+**The COMMAND can be at least start, stop, status, and restart.**
+
+1. The stop command: service SCRIPT-Name command
+2. The start command: service SCRIPT-Name start
+3. The status command: service SCRIPT-Name status
+4. The restart command: service SCRIPT-Name restart
+
+
+
+# Check network configuration: Nic name, ip_address,TCP sockets, status, MTU ,ping
+1. Nic name
+2. ip_address
+方法一：
+```
+[rwsae01]:[03:23:43]:[/root]:$ <u>ip addr show</u>
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:21:28:3d:ef:ca brd ff:ff:ff:ff:ff:ff
+    inet 10.208.144.42/21 brd 10.208.151.255 scope global eth0
+    inet 10.208.147.172/21 brd 10.208.151.255 scope global secondary eth0:1
+    inet 10.208.145.220/21 brd 10.208.151.255 scope global secondary eth0:2
+    inet 10.208.147.129/21 brd 10.208.151.255 scope global secondary eth0:5
+    inet6 2606:b400:400:784a:221:28ff:fe3d:efca/64 scope global dynamic 
+       valid_lft 2591802sec preferred_lft 604602sec
+    inet6 fe80::221:28ff:fe3d:efca/64 scope link 
+       valid_lft forever preferred_lft forever
+3: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:21:28:3d:ef:cb brd ff:ff:ff:ff:ff:ff
+    inet 10.208.160.42/22 brd 10.208.163.255 scope global eno1
+    inet 169.254.3.3/20 brd 169.254.15.255 scope global eno1:2
+    inet6 fe80::221:28ff:fe3d:efcb/64 scope link 
+       valid_lft forever preferred_lft forever
+4: eno2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:21:28:3d:ef:cc brd ff:ff:ff:ff:ff:ff
+    inet 10.208.152.46/22 brd 10.208.155.255 scope global eno2
+    inet 169.254.17.217/20 brd 169.254.31.255 scope global eno2:1
+    inet6 fe80::221:28ff:fe3d:efcc/64 scope link 
+       valid_lft forever preferred_lft forever
+5: eno3: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN qlen 1000
+    link/ether 00:21:28:3d:ef:cd brd ff:ff:ff:ff:ff:ff
+```
+方法二：
+```
+[Tue Aug 15 03:27:53][4997][root@rwsae01.us.oracle.com:~][0]# /sbin/ifconfig                 eno1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.160.42  netmask 255.255.252.0  broadcast 10.208.163.255                          inet6 fe80::221:28ff:fe3d:efcb  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:28:3d:ef:cb  txqueuelen 1000  (Ethernet)
+        RX packets 46507032  bytes 37496391721 (34.9 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 46967526  bytes 43338628896 (40.3 GiB)                                            TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+[comment]:<>(mtu 1500涉及TCP，UTP知识；inet IP地址；netmask 子网掩码；ether：物理网卡地址)
+        
+                                                                                             eno1:2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500                                         inet 169.254.3.3  netmask 255.255.240.0  broadcast 169.254.15.255                            ether 00:21:28:3d:ef:cb  txqueuelen 1000  (Ethernet)
+
+eno2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500                                           inet 10.208.152.46  netmask 255.255.252.0  broadcast 10.208.155.255                          inet6 fe80::221:28ff:fe3d:efcc  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:28:3d:ef:cc  txqueuelen 1000  (Ethernet)
+        RX packets 36865421  bytes 27340342032 (25.4 GiB)                                            RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 37984624  bytes 33611131831 (31.3 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eno2:1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500                                         inet 169.254.17.217  netmask 255.255.240.0  broadcast 169.254.31.255                         ether 00:21:28:3d:ef:cc  txqueuelen 1000  (Ethernet)                                 
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.144.42  netmask 255.255.248.0  broadcast 10.208.151.255
+        inet6 2606:b400:400:784a:221:28ff:fe3d:efca  prefixlen 64  scopeid 0x0<global>
+        inet6 fe80::221:28ff:fe3d:efca  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)                                         RX packets 55712757  bytes 44359822665 (41.3 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 69125916  bytes 68733676008 (64.0 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth0:1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.147.172  netmask 255.255.248.0  broadcast 10.208.151.255
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+
+eth0:2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.145.220  netmask 255.255.248.0  broadcast 10.208.151.255
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+
+eth0:5: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.147.129  netmask 255.255.248.0  broadcast 10.208.151.255
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 0  (Local Loopback)
+        RX packets 22074047  bytes 7149412086 (6.6 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 22074047  bytes 7149412086 (6.6 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
+3. TCP sockets
+```
+[crsusr@rwsae01 ~]$ ss -s
+Total: 4606 (kernel 0)
+TCP:   171 (estab 83, closed 32, orphaned 0, synrecv 0, timewait 3/0), ports 0
+
+Transport Total     IP        IPv6
+*      0         -         -        
+RAW    0         0         0        
+UDP    992       964       28       
+TCP    139       107       32       
+INET   1131      1071      60       
+FRAG   0         0         0 
+```
+
+4. physical status
+```
+[crsusr@rwsae01 ~]$ ethtool eth0
+Settings for eth0:
+     Supported ports: [ TP ]
+     Supported link modes:   10baseT/Half 10baseT/Full 
+                             100baseT/Half 100baseT/Full 
+                             1000baseT/Full 
+     Supported pause frame use: Symmetric
+     Supports auto-negotiation: Yes
+     Advertised link modes:  10baseT/Half 10baseT/Full 
+                             100baseT/Half 100baseT/Full 
+                             1000baseT/Full 
+     Advertised pause frame use: Symmetric
+     Advertised auto-negotiation: Yes
+     Speed: 1000Mb/s
+     Duplex: Full
+     Port: Twisted Pair
+     PHYAD: 1
+     Transceiver: internal
+     Auto-negotiation: on
+     MDI-X: on (auto)
+Cannot get wake-on-lan settings: Operation not permitted
+     Current message level: 0x00000007 (7)
+                       drv probe link
+     Link detected: yes
+```
+
+5. MTU
+MTU是Maximum Transmission Unit的缩写。意思是网络上传送的最大数据包。
+查看方法和设置方法各有两种，分别是ifconfig和文件
+方法一：
+```
+[crsusr@rwsae01 ~]$ ifconfig eth0
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.208.144.42  netmask 255.255.248.0  broadcast 10.208.151.255
+        inet6 2606:b400:400:784a:221:28ff:fe3d:efca  prefixlen 64  scopeid 0x0<global>
+        inet6 fe80::221:28ff:fe3d:efca  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:28:3d:ef:ca  txqueuelen 1000  (Ethernet)
+        RX packets 55765156  bytes 44370589651 (41.3 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 69169680  bytes 68762575485 (64.0 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
+方法二：
+```
+[crsusr@rwsae01 ~]$ cat /sys/class/net/eth0/mtu 
+1500
+```
+
+6. Port
+端口不是独立存在的，它是依附于进程的。某个进程开启，那么它对应的端口就开启了，进程关闭，则该端口也就关闭了。下次若某个进程再次开启，则相应的端口也再次开启。而不要纯粹的理解为关闭掉某个端口，不过可以禁用某个端口。
+方法一：
+```
+[Tue Aug 15 04:39:26][31157][root@rwsae01.us.oracle.com:~][1]# lsof -i:80
+COMMAND     PID USER   FD   TYPE    DEVICE SIZE/OFF NODE NAME
+yumBacken 15228 root   10u  IPv4 339701097      0t0  TCP rwsae01.us.oracle.com:37019->a96-6-45-73.deploy.akamaitechnologies.com:http (SYN_SENT)
+```
+方法二：
+```
+[Tue Aug 15 04:39:35][31157][root@rwsae01.us.oracle.com:~][0]# netstat -anp|grep 80
+```
+
+7. ping
+PING (Packet INternet Groper) command is the best way to test connectivity between two nodes. Whether it is Local Area Network (LAN) or Wide Area Network (WAN). Ping use ICMP (Internet Control Message Protocol) to communicate to other devices. You can ping host name of ip address using below command.
+ping命令用来测试主机之间网络的连通性。执行ping指令会使用ICMP传输协议，发出要求回应的信息，若远端主机的网络功能没有问题，就会回应该信息，因而得知该主机运作正常。
+
+正常连接：
+```
+[rwsae01]:[04:47:29]:[~]:$ ping rwsae03.us.oracle.com
+PING rwsae03.us.oracle.com (10.208.144.44) 56(84) bytes of data.
+64 bytes from rwsae03.us.oracle.com (10.208.144.44): icmp_seq=1 ttl=64 time=0.248 ms
+64 bytes from rwsae03.us.oracle.com (10.208.144.44): icmp_seq=2 ttl=64 time=0.182 ms
+64 bytes from rwsae03.us.oracle.com (10.208.144.44): icmp_seq=3 ttl=64 time=0.231 ms
+64 bytes from rwsae03.us.oracle.com (10.208.144.44): icmp_seq=4 ttl=64 time=0.257 ms
+64 bytes from rwsae03.us.oracle.com (10.208.144.44): icmp_seq=5 ttl=64 time=0.205 ms
+64 bytes from rwsae03.us.oracle.com (10.208.144.44): icmp_seq=6 ttl=64 time=0.178 ms
+64 bytes from rwsae03.us.oracle.com (10.208.144.44): icmp_seq=7 ttl=64 time=0.266 ms
+...
+```
+
+非正常连接：
+```
+[Tue Aug 15 04:44:09][1394][root@rwsae01.us.oracle.com:~][1]# ping www.baidu.com
+PING www.a.shifen.com (103.235.46.39) 56(84) bytes of data.
+From whq1op1-rtr-1-v301.us.oracle.com (10.208.144.2) icmp_seq=7 Destination Host Unreachable
+From whq1op1-rtr-1-v301.us.oracle.com (10.208.144.2) icmp_seq=8 Destination Host Unreachable
+From whq1op1-rtr-1-v301.us.oracle.com (10.208.144.2) icmp_seq=9 Destination Host Unreachable
+From whq1op1-rtr-1-v301.us.oracle.com (10.208.144.2) icmp_seq=10 Destination Host Unreachable
+...
+```
+
+Ping的错误回应
+
+Request Timed Out:对方可能装有防火墙或已关机，还有就是本机的IP不正确和网关设置错误
+Destination Host Unreachable:如果局域网中使用DHCP分配IP时，而碰巧DHCP失效，这时使用   PING命令就会产生此错误。因为在DHCP失效时客户机无法分配到IP系统只有自设IP，它往往会设为不同子网的IP。
+Bad IP address: 没有连接到DNS服务器所以无法解析这个IP地址
+Source quench received: 表示对方或中途的服务器繁忙无法回应
+
