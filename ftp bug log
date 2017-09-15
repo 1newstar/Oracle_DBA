@@ -1,0 +1,20 @@
+# ftp上传 bug log
+[root@rwsae01.us.oracle.com:/scratch/oracle/crsbase/tfa/repository/collection_Mon_Aug_21_03_51_24_PDT_2017_node_all][0]# ls
+diagcollect_20170821035124_rwsae01.log          rwsae01.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip.txt
+diagcollect_20170821035124_rwsae03.log          rwsae03.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+diagcollect_20170821035124_rwsae04.log          rwsae03.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip.txt
+diagcollect_console_20170821035124_rwsae01.log  rwsae04.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+rwsae01.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip    rwsae04.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip.txt[root@rwsae01.us.oracle.com:/scratch/oracle/crsbase/tfa/repository/collection_Mon_Aug_21_03_51_24_PDT_2017_node_all][0]# sftp frank.shi@oracle.com@bugsftp
+Are you sure you want to continue connecting (yes/no)? yes
+Enter password for frank.shi@oracle.com
+Password:
+Connected to bugsftp.
+sftp> cd 26663871
+sftp> put ./*.zip
+Uploading ./rwsae01.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip to /26663871/rwsae01.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+./rwsae01.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip                     100%  236MB   1.0MB/s   03:50    
+Uploading ./rwsae03.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip to /26663871/rwsae03.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+./rwsae03.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip                     100%  204MB   1.0MB/s   03:23    
+Uploading ./rwsae04.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip to /26663871/rwsae04.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip
+./rwsae04.tfa_Mon_Aug_21_03_51_24_PDT_2017.zip                     100%  153MB   1.1MB/s   02:24 
+sftp> exit
