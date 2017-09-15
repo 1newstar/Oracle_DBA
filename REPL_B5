@@ -1,0 +1,75 @@
+# CASE : REPL_B5
+
+注：log查看
+ cat /scratch/oracle/crsbase/diag/crs/rwsae01/crs/trace/acfsdupd_frank-353_0.trc
+
+1. Setup replv2 with -i option
+
+[Wed Aug 23 00:56:05][22763][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount/.ACFS/repl/logs][1]# acfsutil repl init primary -i 30s -s crsusr@rwsae04 -m /scratch/crsusr/mount/mounttest/ /scratch/crsusr/mount/clusterwidemount/
+
+2. Create some big files on primary.Then do sync operation. 
+Run “acfsutil repl sync” to synchronize primary site
+
+方法一：
+[Wed Aug 23 04:58:19][13511][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount][1]# truncate -s 1G frankopt.img
+[Wed Aug 23 04:59:26][13511][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount][0]# truncate -s 1G smile.ora
+
+方法二：
+[Wed Aug 23 01:01:03][22763][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount/.ACFS/repl/logs][0]# cd /scratch/crsusr/wrk/scripts/bonnie/
+[Wed Aug 23 01:01:07][22763][root@rwsae01.us.oracle.com:/scratch/crsusr/wrk/scripts/bonnie][0]# vi test.pl
+
+方法三：
+(建大文件考虑用dd操作）
+dd if=/dev/zero of=/nf/iris/disk1 bs=1024k count=1000   这是1G大小的文件
+[Wed Aug 23 22:47:22][31597][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount][0]# ls -l
+total 128
+-rw-r--r-- 1 root root  104857600 Aug 23 05:10 beau.img
+-rw-r--r-- 1 root root 1073741824 Aug 23 04:59 frankopt.img
+drwx------ 2 root root      65536 Aug 23 04:16 lost+found
+drwxr--r-- 2 root root      20480 Aug 23 22:47 sdhgd
+-rw-r--r-- 1 root root 1073741824 Aug 23 05:02 smile.ora
+在clusterwidemount目录下建一个名为 frank的1G文件
+dd if=/dev/zero of=/scratch/crsusr/mount/clusterwidemount/frank bs=1024k count=1000
+
+#!/usr/bin/perl -w
+use strict;
+my $log = 'test.log';
+open LOG, "> $log";
+my $i=0;
+#while (1) {
+for my $j (0 .. 1000) {
+  $i = $i + 1;
+  print LOG "The $i time, Start time: ", scalar localtime(), "\n";
+  system('./Bonnie -d /scratch/crsusr/mount/clusterwidemount/ -s 1024m');
+  print LOG "The $i time, Stop time: ", scalar localtime(), "\n";
+  my $oldhandle = select(LOG);
+  $| = 1;
+  select($oldhandle);
+}
+close LOG;
+
+注：system('./Bonnie -d /scratch/crsusr/mount/clusterwidemount/ -s 1024m');
+将1024M的测试文件写到 /scratch/crsusr/mount/clusterwidemount路径下
+
+运行.pl文件即可 Create some big files on primary
+[Wed Aug 23 01:02:21][22763][root@rwsae01.us.oracle.com:/scratch/crsusr/wrk/scripts/bonnie][0]# ./test.pl 
+
+缺陷：无法终止，需要做操作
+grep test之后kill -9 PID
+（注）
+grep（global search regular expression(RE) and print out the line，全面搜索正则表达式并把行打印出来）是一种强大的文本搜索工具，它能使用正则表达式搜索文本，并把匹配的行打印出来。
+
+
+
+3. Repeat step2 and step3 with [apply] option
+
+(1)option apply
+加这个option sync成功才返回
+不加apply就是，不确定apply成功就返回了
+(2) option 为 primary mount 目录
+[Wed Aug 23 05:03:01][13511][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount][0]# acfsutil repl sync apply /scratch/crsusr/mount/clusterwidemount/
+
+4. Check data on primary if tansfered to standby.
+Run acfsutil repl compare [-a] [-t { all | tagname, ...}] primary_mount_point standby_mount_point
+
+[Wed Aug 23 05:07:12][13511][root@rwsae01.us.oracle.com:/scratch/crsusr/mount/clusterwidemount][1]# acfsutil repl compare -a /scratch/crsusr/mount/clusterwidemount/ /scratch/crsusr/mount/mounttest/
