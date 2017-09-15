@@ -1,0 +1,10 @@
+# 先起CRS
+[Tue Aug 29 00:04:13][20046][root@rwsae01.us.oracle.com:~][1]# cd /scratch/oracle/CrsHome/bin/
+[Tue Aug 29 00:07:29][20046][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# ./crsctl stop crs -f
+[Tue Aug 29 00:07:29][20046][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# ./crsctl start crs -wait
+> 注：-f force， -wait 显示步骤
+
+# 再起ASM
+[Tue Aug 29 00:07:45][20046][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][1]# srvctl start asm -n rwsae04
+PRCC-1015 : asm was already running on rwsae04
+PRCR-1004 : Resource ora.asm is already running
