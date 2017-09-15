@@ -1,0 +1,58 @@
+# Weekly Report
+
+{需要知道的}
+老铁或者Winston 问进度，每周二更新。
+
+（跟进replication的wiki）
+https://stbeehive.oracle.com/teamcollab/wiki/Real+Application+Clusters:ACFS+Testing+Progress
+
+更新
+1. label
+2. updated time
+3. 一些open bug number， 不用列全部的
+【closed bug(80,90,31,91..)去掉，只留open bug（11，15，13，30）在上面 】
+
+
+{Report 可以这样写}
+
+Hi Yuanlin,
+
+ACFS Replication Test Status Report  09/06/2017 - 09/12/2017
+Test Label:
+HAS_MAIN_LINUX.X64_170903 
+RDBMS_MAIN_LINUX.X64_170905
+USM_MAIN_LINUX.X64_170829
+
+Testing Status: 
+Total case	Run Case	Failed case	Defer case
+    31	       31	          3	         3
+Test progress (relative) Executed:100% (+0) PASS: 81% (+4) FAIL: 19%
+
+Case:
+REPL_B15 
+REPL_B16 
+REPL_B17 Pass
+REPL_B18 Fail
+REPL_D1 Fail
+
+Bug:
+Bug#26785766 (11, 18.1) LNX64-181-REPL:AUTO-RESIZE SHOULD GIVE ERROR WHEN WRONG OPTION VALUE BE DESIGNAT 
+
+
+Regards.
+
+Frank
+
+>>注：
+ues the URL to get "Report Format" bug.
+(http://rws00fxq.us.oracle.com/bugdb/search.html)
+
+
+
+####
+[Tue Sep 12 01:18:27][7946][root@rwsae01.us.oracle.com:/scratch/oracle/CrsHome/bin][0]# acfsdriverstate version
+ACFS-9325:     Driver OS kernel version = 3.8.13-35.3.1.el7uek.x86_64.
+ACFS-9326:     Driver build number = 170829.
+ACFS-9212:     Driver build version = MAIN.
+ACFS-9547:     Driver available build number = 170829.
+ACFS-9548:     Driver available build version = MAIN.
